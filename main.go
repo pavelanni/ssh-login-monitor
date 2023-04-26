@@ -149,12 +149,12 @@ func logToEvents(filename string, users *[]User) ([]SessionEvent, error) {
 }
 
 func eventsToSessions(events []SessionEvent) []Session {
-	sessions := make([]Session, 0)
-	portUsers := make(map[string]string)
+	sessions := []Session{}
+	portToUser := make(map[string]string)
 
 	for _, event := range events {
 		if event.EventType == "login" {
-			portUsers[event.Port] = event.Username
+			portToUser[event.Port] = event.Username
 			session := Session{
 				Username:  event.Username,
 				Port:      event.Port,
@@ -163,16 +163,14 @@ func eventsToSessions(events []SessionEvent) []Session {
 			}
 			sessions = append(sessions, session)
 		} else if event.EventType == "logout" {
-			fmt.Println(event)
 			port := event.Port
-			if user, ok := portUsers[port]; ok {
-				fmt.Println(port, user)
-				// find the event with the same port in sessions
+			if user, ok := portToUser[port]; ok {
+				// find the session with the same port in sessions
 				for i, session := range sessions {
 					if session.Username == user && session.SourceIP == event.SourceIP && session.Port == port {
 						session.EndTime = event.EventTime
 						sessions[i] = session
-						delete(portUsers, port)
+						delete(portToUser, port)
 					}
 				}
 			} else {
@@ -196,7 +194,6 @@ func main() {
 	}
 
 	sessions := eventsToSessions(events)
-	fmt.Println(sessions)
 
 	for _, session := range sessions {
 		fmt.Printf("%s\t%s\t%s\t%s\t%s\n", session.Username, session.SourceIP,
