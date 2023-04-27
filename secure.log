@@ -1,187 +1,21 @@
-Apr 23 06:53:44 deep-rh polkitd[940]: Operator of unix-session:1 FAILED to authenticate to gain authorization for action org.freedesktop.packagekit.system-sources-refresh for system-bus-name::1.175 [/usr/bin/gnome-software --gapplication-service] (owned by unix-user:pavel)
-Apr 24 06:53:44 deep-rh polkitd[940]: Operator of unix-session:1 FAILED to authenticate to gain authorization for action org.freedesktop.packagekit.system-sources-refresh for system-bus-name::1.175 [/usr/bin/gnome-software --gapplication-service] (owned by unix-user:pavel)
-Apr 24 07:05:12 deep-rh sshd[1075]: Server listening on 0.0.0.0 port 22.
-Apr 24 07:05:12 deep-rh sshd[1075]: Server listening on :: port 22.
-Apr 24 07:05:12 deep-rh polkitd[928]: Loading rules from directory /etc/polkit-1/rules.d
-Apr 24 07:05:12 deep-rh polkitd[928]: Loading rules from directory /usr/share/polkit-1/rules.d
-Apr 24 07:05:12 deep-rh polkitd[928]: Finished loading, compiling and executing 13 rules
-Apr 24 07:05:12 deep-rh polkitd[928]: Acquired the name org.freedesktop.PolicyKit1 on the system bus
-Apr 24 07:05:15 deep-rh systemd[1511]: pam_unix(systemd-user:session): session opened for user pavel by (uid=0)
-Apr 24 07:05:15 deep-rh vncsession[1140]: pam_unix(tigervnc:session): session opened for user pavel by (uid=0)
-Apr 24 07:05:23 deep-rh polkitd[928]: Registered Authentication Agent for unix-session:1 (system bus name :1.108 [/usr/bin/gnome-shell], object path /org/freedesktop/PolicyKit1/AuthenticationAgent, locale en_US.UTF-8)
-Apr 24 07:10:25 deep-rh polkitd[928]: Operator of unix-session:1 FAILED to authenticate to gain authorization for action org.freedesktop.packagekit.system-sources-refresh for system-bus-name::1.185 [/usr/bin/gnome-software --gapplication-service] (owned by unix-user:pavel)
-Apr 25 06:11:25 deep-rh polkitd[928]: Operator of unix-session:1 FAILED to authenticate to gain authorization for action org.freedesktop.packagekit.system-sources-refresh for system-bus-name::1.185 [/usr/bin/gnome-software --gapplication-service] (owned by unix-user:pavel)
-Apr 25 20:37:58 deep-rh sshd[640270]: Accepted publickey for pavel from 192.168.1.24 port 59242 ssh2: ED25519 SHA256:lg3Nd1UEnRJ9SxP7NiI7r4cfG1eDtuk/Oh/PBuAwOKg
-Apr 25 20:37:58 deep-rh sshd[640270]: pam_unix(sshd:session): session opened for user pavel by (uid=0)
-Apr 25 20:38:16 deep-rh sshd[640273]: Received disconnect from 192.168.1.24 port 59242:11: disconnected by user
-Apr 25 20:38:16 deep-rh sshd[640273]: Disconnected from user pavel 192.168.1.24 port 59242
-Apr 25 20:38:16 deep-rh sshd[640270]: pam_unix(sshd:session): session closed for user pavel
-Apr 25 21:00:52 deep-rh sshd[647076]: Accepted publickey for pavel from 192.168.1.24 port 51184 ssh2: ED25519 SHA256:lg3Nd1UEnRJ9SxP7NiI7r4cfG1eDtuk/Oh/PBuAwOKg
-Apr 25 21:00:52 deep-rh sshd[647076]: pam_unix(sshd:session): session opened for user pavel by (uid=0)
-Apr 25 21:01:50 deep-rh sudo[647797]:   pavel : TTY=pts/2 ; PWD=/home/pavel ; USER=root ; COMMAND=/bin/less /var/log/secure
-Apr 25 21:01:50 deep-rh sudo[647797]: pam_systemd(sudo:session): Cannot create session: Already running in a session or user slice
-Apr 25 21:01:50 deep-rh sudo[647797]: pam_unix(sudo:session): session opened for user root by pavel(uid=0)
-Apr 25 21:02:25 deep-rh sudo[647797]: pam_unix(sudo:session): session closed for user root
-Apr 25 21:02:30 deep-rh sudo[648025]:   pavel : TTY=pts/2 ; PWD=/home/pavel ; USER=root ; COMMAND=/bin/bash
-Apr 25 21:02:30 deep-rh sudo[648025]: pam_systemd(sudo-i:session): Cannot create session: Already running in a session or user slice
-Apr 25 21:02:30 deep-rh sudo[648025]: pam_unix(sudo-i:session): session opened for user root by pavel(uid=0)
-Apr 25 21:08:33 deep-rh sshd[649699]: Accepted publickey for root from 192.168.1.24 port 43128 ssh2: ED25519 SHA256:QNCiM2NNWBVeQvtt28wS8RN1DJnBbzoJR3qzuxuYO1I
-Apr 25 21:08:33 deep-rh systemd[649707]: pam_unix(systemd-user:session): session opened for user root by (uid=0)
-Apr 25 21:08:34 deep-rh sshd[649699]: pam_unix(sshd:session): session opened for user root by (uid=0)
-Apr 25 21:08:38 deep-rh sshd[649734]: Received disconnect from 192.168.1.24 port 43128:11: disconnected by user
-Apr 25 21:08:38 deep-rh sshd[649734]: Disconnected from user root 192.168.1.24 port 43128
-Apr 25 21:08:38 deep-rh sshd[649699]: pam_unix(sshd:session): session closed for user root
-Apr 25 21:08:44 deep-rh sshd[649867]: Accepted publickey for root from 192.168.1.24 port 43132 ssh2: ED25519 SHA256:QNCiM2NNWBVeQvtt28wS8RN1DJnBbzoJR3qzuxuYO1I
-Apr 25 21:08:44 deep-rh sshd[649867]: pam_unix(sshd:session): session opened for user root by (uid=0)
-Apr 25 21:08:46 deep-rh sshd[649870]: Received disconnect from 192.168.1.24 port 43132:11: disconnected by user
-Apr 25 21:08:46 deep-rh sshd[649870]: Disconnected from user root 192.168.1.24 port 43132
-Apr 25 21:08:46 deep-rh sshd[649867]: pam_unix(sshd:session): session closed for user root
-Apr 25 21:08:50 deep-rh sshd[650011]: Accepted publickey for root from 192.168.1.24 port 51894 ssh2: ED25519 SHA256:QNCiM2NNWBVeQvtt28wS8RN1DJnBbzoJR3qzuxuYO1I
-Apr 25 21:08:50 deep-rh sshd[650011]: pam_unix(sshd:session): session opened for user root by (uid=0)
-Apr 25 21:08:52 deep-rh sshd[650014]: Received disconnect from 192.168.1.24 port 51894:11: disconnected by user
-Apr 25 21:08:52 deep-rh sshd[650014]: Disconnected from user root 192.168.1.24 port 51894
-Apr 25 21:08:52 deep-rh sshd[650011]: pam_unix(sshd:session): session closed for user root
-Apr 25 21:09:03 deep-rh systemd[649712]: pam_unix(systemd-user:session): session closed for user root
-Apr 25 21:17:41 deep-rh sshd[652501]: Accepted publickey for root from 192.168.1.24 port 35546 ssh2: ED25519 SHA256:QNCiM2NNWBVeQvtt28wS8RN1DJnBbzoJR3qzuxuYO1I
-Apr 25 21:17:41 deep-rh systemd[652508]: pam_unix(systemd-user:session): session opened for user root by (uid=0)
-Apr 25 21:17:41 deep-rh sshd[652501]: pam_unix(sshd:session): session opened for user root by (uid=0)
-Apr 25 21:21:39 deep-rh sshd[652535]: Received disconnect from 192.168.1.24 port 35546:11: disconnected by user
-Apr 25 21:21:39 deep-rh sshd[652535]: Disconnected from user root 192.168.1.24 port 35546
-Apr 25 21:21:39 deep-rh sshd[652501]: pam_unix(sshd:session): session closed for user root
-Apr 25 21:21:49 deep-rh systemd[652514]: pam_unix(systemd-user:session): session closed for user root
-Apr 25 21:23:09 deep-rh sudo[648025]: pam_unix(sudo-i:session): session closed for user root
-Apr 25 21:27:47 deep-rh sudo[656084]:   pavel : TTY=pts/2 ; PWD=/home/pavel ; USER=root ; COMMAND=/bin/bash
-Apr 25 21:27:47 deep-rh sudo[656084]: pam_systemd(sudo-i:session): Cannot create session: Already running in a session or user slice
-Apr 25 21:27:47 deep-rh sudo[656084]: pam_unix(sudo-i:session): session opened for user root by pavel(uid=0)
-Apr 25 21:29:28 deep-rh sshd[1075]: Received signal 15; terminating.
-Apr 25 21:29:28 deep-rh sshd[656638]: Server listening on 0.0.0.0 port 22.
-Apr 25 21:29:28 deep-rh sshd[656638]: Server listening on :: port 22.
-Apr 25 21:29:47 deep-rh sshd[656708]: Connection from 192.168.1.24 port 42480 on 192.168.1.234 port 22
-Apr 25 21:29:47 deep-rh sshd[656708]: Accepted key ED25519 SHA256:QNCiM2NNWBVeQvtt28wS8RN1DJnBbzoJR3qzuxuYO1I found at /root/.ssh/authorized_keys:1
-Apr 25 21:29:47 deep-rh sshd[656708]: Postponed publickey for root from 192.168.1.24 port 42480 ssh2 [preauth]
-Apr 25 21:29:47 deep-rh sshd[656708]: Accepted key ED25519 SHA256:QNCiM2NNWBVeQvtt28wS8RN1DJnBbzoJR3qzuxuYO1I found at /root/.ssh/authorized_keys:1
-Apr 25 21:29:47 deep-rh sshd[656708]: Accepted publickey for root from 192.168.1.24 port 42480 ssh2: ED25519 SHA256:QNCiM2NNWBVeQvtt28wS8RN1DJnBbzoJR3qzuxuYO1I
-Apr 25 21:29:47 deep-rh systemd[656715]: pam_unix(systemd-user:session): session opened for user root by (uid=0)
-Apr 25 21:29:47 deep-rh sshd[656708]: pam_unix(sshd:session): session opened for user root by (uid=0)
-Apr 25 21:29:47 deep-rh sshd[656708]: User child is on pid 656742
-Apr 25 21:29:47 deep-rh sshd[656742]: Starting session: shell on pts/3 for root from 192.168.1.24 port 42480 id 0
-Apr 25 21:30:52 deep-rh sshd[656742]: Received disconnect from 192.168.1.24 port 42480:11: disconnected by user
-Apr 25 21:30:52 deep-rh sshd[656742]: Disconnected from user root 192.168.1.24 port 42480
-Apr 25 21:30:52 deep-rh sshd[656708]: pam_unix(sshd:session): session closed for user root
-Apr 25 21:31:00 deep-rh sshd[657184]: Connection from 192.168.1.24 port 47478 on 192.168.1.234 port 22
-Apr 25 21:31:00 deep-rh sshd[657184]: Accepted key ED25519 SHA256:QNCiM2NNWBVeQvtt28wS8RN1DJnBbzoJR3qzuxuYO1I found at /root/.ssh/authorized_keys:1
-Apr 25 21:31:00 deep-rh sshd[657184]: Postponed publickey for root from 192.168.1.24 port 47478 ssh2 [preauth]
-Apr 25 21:31:00 deep-rh sshd[657184]: Accepted key ED25519 SHA256:QNCiM2NNWBVeQvtt28wS8RN1DJnBbzoJR3qzuxuYO1I found at /root/.ssh/authorized_keys:1
-Apr 25 21:31:00 deep-rh sshd[657184]: Accepted publickey for root from 192.168.1.24 port 47478 ssh2: ED25519 SHA256:QNCiM2NNWBVeQvtt28wS8RN1DJnBbzoJR3qzuxuYO1I
-Apr 25 21:31:00 deep-rh sshd[657184]: pam_unix(sshd:session): session opened for user root by (uid=0)
-Apr 25 21:31:00 deep-rh sshd[657184]: User child is on pid 657187
-Apr 25 21:31:00 deep-rh sshd[657187]: Starting session: shell on pts/3 for root from 192.168.1.24 port 47478 id 0
-Apr 25 21:32:29 deep-rh sshd[657187]: Received disconnect from 192.168.1.24 port 47478:11: disconnected by user
-Apr 25 21:32:29 deep-rh sshd[657187]: Disconnected from user root 192.168.1.24 port 47478
-Apr 25 21:32:29 deep-rh sshd[657184]: pam_unix(sshd:session): session closed for user root
-Apr 25 21:32:39 deep-rh systemd[656721]: pam_unix(systemd-user:session): session closed for user root
-Apr 25 21:36:29 deep-rh sshd[658741]: Connection from 192.168.1.24 port 47080 on 192.168.1.234 port 22
-Apr 25 21:36:29 deep-rh sshd[658741]: Accepted key ED25519 SHA256:QNCiM2NNWBVeQvtt28wS8RN1DJnBbzoJR3qzuxuYO1I found at /root/.ssh/authorized_keys:1
-Apr 25 21:36:29 deep-rh sshd[658741]: Postponed publickey for root from 192.168.1.24 port 47080 ssh2 [preauth]
-Apr 25 21:36:29 deep-rh sshd[658741]: Accepted key ED25519 SHA256:QNCiM2NNWBVeQvtt28wS8RN1DJnBbzoJR3qzuxuYO1I found at /root/.ssh/authorized_keys:1
-Apr 25 21:36:29 deep-rh sshd[658741]: Accepted publickey for root from 192.168.1.24 port 47080 ssh2: ED25519 SHA256:QNCiM2NNWBVeQvtt28wS8RN1DJnBbzoJR3qzuxuYO1I
-Apr 25 21:36:29 deep-rh systemd[658749]: pam_unix(systemd-user:session): session opened for user root by (uid=0)
-Apr 25 21:36:30 deep-rh sshd[658741]: pam_unix(sshd:session): session opened for user root by (uid=0)
-Apr 25 21:36:30 deep-rh sshd[658741]: User child is on pid 658775
-Apr 25 21:36:30 deep-rh sshd[658775]: Starting session: shell on pts/3 for root from 192.168.1.24 port 47080 id 0
-Apr 25 21:36:40 deep-rh sshd[658775]: Received disconnect from 192.168.1.24 port 47080:11: disconnected by user
-Apr 25 21:36:40 deep-rh sshd[658775]: Disconnected from user root 192.168.1.24 port 47080
-Apr 25 21:36:40 deep-rh sshd[658741]: pam_unix(sshd:session): session closed for user root
-Apr 25 21:36:50 deep-rh systemd[658753]: pam_unix(systemd-user:session): session closed for user root
-Apr 25 21:37:45 deep-rh sshd[659200]: Connection from 192.168.1.24 port 49936 on 192.168.1.234 port 22
-Apr 25 21:37:45 deep-rh sshd[659200]: Accepted key ED25519 SHA256:QNCiM2NNWBVeQvtt28wS8RN1DJnBbzoJR3qzuxuYO1I found at /root/.ssh/authorized_keys:1
-Apr 25 21:37:45 deep-rh sshd[659200]: Postponed publickey for root from 192.168.1.24 port 49936 ssh2 [preauth]
-Apr 25 21:37:45 deep-rh sshd[659200]: Accepted key ED25519 SHA256:QNCiM2NNWBVeQvtt28wS8RN1DJnBbzoJR3qzuxuYO1I found at /root/.ssh/authorized_keys:1
-Apr 25 21:37:45 deep-rh sshd[659200]: Accepted publickey for root from 192.168.1.24 port 49936 ssh2: ED25519 SHA256:QNCiM2NNWBVeQvtt28wS8RN1DJnBbzoJR3qzuxuYO1I
-Apr 25 21:37:45 deep-rh systemd[659207]: pam_unix(systemd-user:session): session opened for user root by (uid=0)
-Apr 25 21:37:45 deep-rh sshd[659200]: pam_unix(sshd:session): session opened for user root by (uid=0)
-Apr 25 21:37:45 deep-rh sshd[659200]: User child is on pid 659231
-Apr 25 21:37:46 deep-rh sshd[659231]: Starting session: shell on pts/3 for root from 192.168.1.24 port 49936 id 0
-Apr 25 21:38:02 deep-rh sshd[659231]: Close session: user root from 192.168.1.24 port 49936 id 0
-Apr 25 21:38:02 deep-rh sshd[659231]: Received disconnect from 192.168.1.24 port 49936:11: disconnected by user
-Apr 25 21:38:02 deep-rh sshd[659231]: Disconnected from user root 192.168.1.24 port 49936
-Apr 25 21:38:02 deep-rh sshd[659200]: pam_unix(sshd:session): session closed for user root
-Apr 25 21:38:13 deep-rh systemd[659212]: pam_unix(systemd-user:session): session closed for user root
-Apr 25 21:38:31 deep-rh sshd[659550]: Connection from 192.168.1.24 port 47762 on 192.168.1.234 port 22
-Apr 25 21:38:31 deep-rh sshd[659550]: Accepted key ED25519 SHA256:Gbb0a4WiVgFJIVelmkox3fJUCB0HhQbJLcaK+DzpgtA found at /root/.ssh/authorized_keys:3
-Apr 25 21:38:31 deep-rh sshd[659550]: Postponed publickey for root from 192.168.1.24 port 47762 ssh2 [preauth]
-Apr 25 21:38:31 deep-rh sshd[659550]: Accepted key ED25519 SHA256:Gbb0a4WiVgFJIVelmkox3fJUCB0HhQbJLcaK+DzpgtA found at /root/.ssh/authorized_keys:3
-Apr 25 21:38:31 deep-rh sshd[659550]: Accepted publickey for root from 192.168.1.24 port 47762 ssh2: ED25519 SHA256:Gbb0a4WiVgFJIVelmkox3fJUCB0HhQbJLcaK+DzpgtA
-Apr 25 21:38:31 deep-rh systemd[659557]: pam_unix(systemd-user:session): session opened for user root by (uid=0)
-Apr 25 21:38:31 deep-rh sshd[659550]: pam_unix(sshd:session): session opened for user root by (uid=0)
-Apr 25 21:38:31 deep-rh sshd[659550]: User child is on pid 659581
-Apr 25 21:38:31 deep-rh sshd[659581]: Starting session: shell on pts/3 for root from 192.168.1.24 port 47762 id 0
-Apr 25 21:38:50 deep-rh sshd[659581]: Received disconnect from 192.168.1.24 port 47762:11: disconnected by user
-Apr 25 21:38:50 deep-rh sshd[659581]: Disconnected from user root 192.168.1.24 port 47762
-Apr 25 21:38:50 deep-rh sshd[659550]: pam_unix(sshd:session): session closed for user root
-Apr 25 21:38:56 deep-rh sshd[659768]: Connection from 192.168.1.24 port 56642 on 192.168.1.234 port 22
-Apr 25 21:38:56 deep-rh sshd[659768]: Accepted key ED25519 SHA256:izKQxAsiNB1U+1BIoegyGk5Z8ni9P65aKX1011UD2v0 found at /root/.ssh/authorized_keys:4
-Apr 25 21:38:56 deep-rh sshd[659768]: Postponed publickey for root from 192.168.1.24 port 56642 ssh2 [preauth]
-Apr 25 21:38:56 deep-rh sshd[659768]: Accepted key ED25519 SHA256:izKQxAsiNB1U+1BIoegyGk5Z8ni9P65aKX1011UD2v0 found at /root/.ssh/authorized_keys:4
-Apr 25 21:38:56 deep-rh sshd[659768]: Accepted publickey for root from 192.168.1.24 port 56642 ssh2: ED25519 SHA256:izKQxAsiNB1U+1BIoegyGk5Z8ni9P65aKX1011UD2v0
-Apr 25 21:38:56 deep-rh sshd[659768]: pam_unix(sshd:session): session opened for user root by (uid=0)
-Apr 25 21:38:56 deep-rh sshd[659768]: User child is on pid 659771
-Apr 25 21:38:56 deep-rh sshd[659771]: Starting session: shell on pts/3 for root from 192.168.1.24 port 56642 id 0
-Apr 25 21:39:00 deep-rh sshd[659771]: Close session: user root from 192.168.1.24 port 56642 id 0
-Apr 25 21:39:00 deep-rh sshd[659771]: Received disconnect from 192.168.1.24 port 56642:11: disconnected by user
-Apr 25 21:39:00 deep-rh sshd[659771]: Disconnected from user root 192.168.1.24 port 56642
-Apr 25 21:39:00 deep-rh sshd[659768]: pam_unix(sshd:session): session closed for user root
-Apr 25 21:39:10 deep-rh systemd[659561]: pam_unix(systemd-user:session): session closed for user root
-Apr 25 21:39:16 deep-rh sshd[659980]: Connection from 192.168.1.24 port 42956 on 192.168.1.234 port 22
-Apr 25 21:39:16 deep-rh sshd[659980]: Accepted key ED25519 SHA256:jzfndBNBSD8dqBdAp8xuxxLO/tos5SjD1ZGnZtLro9E found at /root/.ssh/authorized_keys:2
-Apr 25 21:39:16 deep-rh sshd[659980]: Postponed publickey for root from 192.168.1.24 port 42956 ssh2 [preauth]
-Apr 25 21:39:16 deep-rh sshd[659980]: Accepted key ED25519 SHA256:jzfndBNBSD8dqBdAp8xuxxLO/tos5SjD1ZGnZtLro9E found at /root/.ssh/authorized_keys:2
-Apr 25 21:39:16 deep-rh sshd[659980]: Accepted publickey for root from 192.168.1.24 port 42956 ssh2: ED25519 SHA256:jzfndBNBSD8dqBdAp8xuxxLO/tos5SjD1ZGnZtLro9E
-Apr 25 21:39:16 deep-rh systemd[659987]: pam_unix(systemd-user:session): session opened for user root by (uid=0)
-Apr 25 21:39:16 deep-rh sshd[659980]: pam_unix(sshd:session): session opened for user root by (uid=0)
-Apr 25 21:39:16 deep-rh sshd[659980]: User child is on pid 660012
-Apr 25 21:39:17 deep-rh sshd[660012]: Starting session: shell on pts/3 for root from 192.168.1.24 port 42956 id 0
-Apr 25 21:39:25 deep-rh sshd[660012]: Received disconnect from 192.168.1.24 port 42956:11: disconnected by user
-Apr 25 21:39:25 deep-rh sshd[660012]: Disconnected from user root 192.168.1.24 port 42956
-Apr 25 21:39:25 deep-rh sshd[659980]: pam_unix(sshd:session): session closed for user root
-Apr 25 21:39:35 deep-rh systemd[659991]: pam_unix(systemd-user:session): session closed for user root
-Apr 25 21:44:55 deep-rh sshd[656638]: Received signal 15; terminating.
-Apr 25 21:44:55 deep-rh sshd[661613]: Server listening on 0.0.0.0 port 22.
-Apr 25 21:44:55 deep-rh sshd[661613]: Server listening on :: port 22.
-Apr 25 21:45:09 deep-rh sshd[661684]: Accepted publickey for root from 192.168.1.24 port 34970 ssh2: ED25519 SHA256:jzfndBNBSD8dqBdAp8xuxxLO/tos5SjD1ZGnZtLro9E
-Apr 25 21:45:09 deep-rh systemd[661691]: pam_unix(systemd-user:session): session opened for user root by (uid=0)
-Apr 25 21:45:09 deep-rh sshd[661684]: pam_unix(sshd:session): session opened for user root by (uid=0)
-Apr 25 21:45:38 deep-rh sshd[661719]: Received disconnect from 192.168.1.24 port 34970:11: disconnected by user
-Apr 25 21:45:38 deep-rh sshd[661719]: Disconnected from user root 192.168.1.24 port 34970
-Apr 25 21:45:38 deep-rh sshd[661684]: pam_unix(sshd:session): session closed for user root
-Apr 25 21:45:43 deep-rh sshd[661966]: Accepted publickey for root from 192.168.1.24 port 47286 ssh2: ED25519 SHA256:Gbb0a4WiVgFJIVelmkox3fJUCB0HhQbJLcaK+DzpgtA
-Apr 25 21:45:43 deep-rh sshd[661966]: pam_unix(sshd:session): session opened for user root by (uid=0)
-Apr 25 21:45:50 deep-rh sshd[661969]: Received disconnect from 192.168.1.24 port 47286:11: disconnected by user
-Apr 25 21:45:50 deep-rh sshd[661969]: Disconnected from user root 192.168.1.24 port 47286
-Apr 25 21:45:50 deep-rh sshd[661966]: pam_unix(sshd:session): session closed for user root
-Apr 25 21:45:54 deep-rh sshd[662120]: Accepted publickey for root from 192.168.1.24 port 55774 ssh2: ED25519 SHA256:izKQxAsiNB1U+1BIoegyGk5Z8ni9P65aKX1011UD2v0
-Apr 25 21:45:54 deep-rh sshd[662120]: pam_unix(sshd:session): session opened for user root by (uid=0)
-Apr 25 21:46:00 deep-rh sshd[662123]: Received disconnect from 192.168.1.24 port 55774:11: disconnected by user
-Apr 25 21:46:00 deep-rh sshd[662123]: Disconnected from user root 192.168.1.24 port 55774
-Apr 25 21:46:00 deep-rh sshd[662120]: pam_unix(sshd:session): session closed for user root
-Apr 25 21:46:10 deep-rh systemd[661696]: pam_unix(systemd-user:session): session closed for user root
-Apr 25 23:59:44 deep-rh sshd[647076]: pam_unix(sshd:session): session closed for user pavel
-Apr 25 23:59:44 deep-rh sudo[656084]: pam_unix(sudo-i:session): session closed for user root
-Apr 26 06:11:25 deep-rh polkitd[928]: Operator of unix-session:1 FAILED to authenticate to gain authorization for action org.freedesktop.packagekit.system-sources-refresh for system-bus-name::1.185 [/usr/bin/gnome-software --gapplication-service] (owned by unix-user:pavel)
-Apr 26 09:06:21 deep-rh sshd[852271]: Accepted publickey for root from 192.168.1.24 port 59974 ssh2: ED25519 SHA256:izKQxAsiNB1U+1BIoegyGk5Z8ni9P65aKX1011UD2v0
-Apr 26 09:06:21 deep-rh systemd[852278]: pam_unix(systemd-user:session): session opened for user root by (uid=0)
-Apr 26 09:06:21 deep-rh sshd[852271]: pam_unix(sshd:session): session opened for user root by (uid=0)
-Apr 26 09:06:30 deep-rh sshd[852429]: Accepted publickey for pavel from 192.168.1.24 port 59990 ssh2: ED25519 SHA256:lg3Nd1UEnRJ9SxP7NiI7r4cfG1eDtuk/Oh/PBuAwOKg
-Apr 26 09:06:30 deep-rh sshd[852429]: pam_unix(sshd:session): session opened for user pavel by (uid=0)
-Apr 26 09:06:42 deep-rh sudo[852804]:   pavel : TTY=pts/3 ; PWD=/home/pavel ; USER=root ; COMMAND=/bin/bash
-Apr 26 09:06:42 deep-rh sudo[852804]: pam_systemd(sudo-i:session): Cannot create session: Already running in a session or user slice
-Apr 26 09:06:42 deep-rh sudo[852804]: pam_unix(sudo-i:session): session opened for user root by pavel(uid=0)
-Apr 26 09:07:18 deep-rh sshd[852304]: Received disconnect from 192.168.1.24 port 59974:11: disconnected by user
-Apr 26 09:07:18 deep-rh sshd[852304]: Disconnected from user root 192.168.1.24 port 59974
-Apr 26 09:07:18 deep-rh sshd[852271]: pam_unix(sshd:session): session closed for user root
-Apr 26 09:07:28 deep-rh systemd[852283]: pam_unix(systemd-user:session): session closed for user root
-Apr 26 12:57:59 deep-rh sshd[917090]: Accepted publickey for pavel from 192.168.1.85 port 63250 ssh2: ED25519 SHA256:kBiQW9nVNjNS3mKPmSwahvKgIU1CiyiZ7yRC1pEkwTk
-Apr 26 12:57:59 deep-rh sshd[917090]: pam_unix(sshd:session): session opened for user pavel by (uid=0)
-Apr 26 12:58:16 deep-rh sudo[917497]:   pavel : TTY=pts/2 ; PWD=/home/pavel ; USER=root ; COMMAND=/bin/bash
-Apr 26 12:58:16 deep-rh sudo[917497]: pam_systemd(sudo-i:session): Cannot create session: Already running in a session or user slice
-Apr 26 12:58:16 deep-rh sudo[917497]: pam_unix(sudo-i:session): session opened for user root by pavel(uid=0)
+Apr 27 10:21:19 deep-rh sshd[1337250]: Accepted publickey for root from 192.168.1.24 port 49090 ssh2: ED25519 SHA256:5xuxPx8QnPv19/6IZ5frmQj1N0hRCP9J364ddE6avL8
+Apr 27 10:21:19 deep-rh systemd[1337257]: pam_unix(systemd-user:session): session opened for user root by (uid=0)
+Apr 27 10:21:19 deep-rh sshd[1337250]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Apr 27 10:21:22 deep-rh sshd[1337282]: Received disconnect from 192.168.1.24 port 49090:11: disconnected by user
+Apr 27 10:21:22 deep-rh sshd[1337282]: Disconnected from user root 192.168.1.24 port 49090
+Apr 27 10:21:22 deep-rh sshd[1337250]: pam_unix(sshd:session): session closed for user root
+Apr 27 10:21:32 deep-rh systemd[1337261]: pam_unix(systemd-user:session): session closed for user root
+Apr 27 10:21:34 deep-rh sshd[1337458]: Accepted publickey for root from 192.168.1.24 port 41254 ssh2: ED25519 SHA256:is6l6bRqCCBVKunT+zVGHoUF0A06p8lt/04EoRbyCUY
+Apr 27 10:21:34 deep-rh systemd[1337467]: pam_unix(systemd-user:session): session opened for user root by (uid=0)
+Apr 27 10:21:34 deep-rh sshd[1337458]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Apr 27 10:21:37 deep-rh sshd[1337493]: Received disconnect from 192.168.1.24 port 41254:11: disconnected by user
+Apr 27 10:21:37 deep-rh sshd[1337493]: Disconnected from user root 192.168.1.24 port 41254
+Apr 27 10:21:37 deep-rh sshd[1337458]: pam_unix(sshd:session): session closed for user root
+Apr 27 10:21:47 deep-rh systemd[1337472]: pam_unix(systemd-user:session): session closed for user root
+Apr 27 10:21:55 deep-rh sshd[1337680]: Accepted publickey for root from 192.168.1.24 port 42552 ssh2: ED25519 SHA256:QgAov0UZI25hWxnbLiHa00j64/zD1m80UMsSIZtxr2s
+Apr 27 10:21:55 deep-rh systemd[1337706]: pam_unix(systemd-user:session): session opened for user root by (uid=0)
+Apr 27 10:21:55 deep-rh sshd[1337680]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Apr 27 10:21:58 deep-rh sshd[1337730]: Received disconnect from 192.168.1.24 port 42552:11: disconnected by user
+Apr 27 10:21:58 deep-rh sshd[1337730]: Disconnected from user root 192.168.1.24 port 42552
+Apr 27 10:21:58 deep-rh sshd[1337680]: pam_unix(sshd:session): session closed for user root
+Apr 27 10:22:08 deep-rh systemd[1337710]: pam_unix(systemd-user:session): session closed for user root

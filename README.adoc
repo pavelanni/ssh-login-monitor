@@ -1,0 +1,289 @@
+= SSH login monitor
+
+I noticed that a friend of mine routinely logs into his lab servers via SSH using the `root` username and password.
+
+"Why do you do that?" I asked.
+
+"What's wrong with that?" he said. "I know, I know, it's not a good security practice, but I'm used to it.
+It's just a lab server, what can go wrong? And also, all other ways are not that easy."
+
+"'What can go wrong?'" I said, "the famous last words!"
+"I'm not going to tell you horror stories, I just think that what you consider 'the most convenient way` is not
+that convenient. There are other ways."
+
+"Yeah, I know, I know," he sighed. "Create a normal user, give them `sudo` access, and all that."
+
+"Yes, that's the _right way_, you are correct.
+Even better, that user shouldn't use password too. Using SSH keys is much better.
+But if you insist on going _directly_ as `root`, you can do it with SSH keys too.
+The good thing about this approach is that you can always check who logged in as `root` with which key."
+
+"Really? Can you show me?" he asked.
+
+Challenge accepted.
+
+== Create users
+
+I decided to use one of my Red Hat servers as a target host.
+For the client host I decided to start a simple Fedora Linux VM and create three normal users on it.
+
+[source,console]
+----
+[pavel@fedora ~]$ sudo useradd -m alice
+[pavel@fedora ~]$ sudo useradd -m bob
+[pavel@fedora ~]$ sudo useradd -m charlie
+----
+
+== Create SSH keys
+
+On behalf of each user I created their SSH keys.
+I decided to use Ed25519 algorithm as it's shorter and more secure that the default RSA.
+(To learn more about this, just google 'ed25519 vs rsa'.)
+
+[source,console]
+----
+[pavel@fedora ~] $ sudo su - alice
+[alice@fedora ~] $ ssh-keygen -t ed25519
+Generating public/private ed25519 key pair.
+Enter file in which to save the key (/home/alice/.ssh/id_ed25519):
+Created directory '/home/alice/.ssh'.
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in /home/alice/.ssh/id_ed25519
+Your public key has been saved in /home/alice/.ssh/id_ed25519.pub
+The key fingerprint is:
+SHA256:5xuxPx8QnPv19/6IZ5frmQj1N0hRCP9J364ddE6avL8 alice@fedora
+The key's randomart image is:
++--[ED25519 256]--+
+|           .. .. |
+|           ..o.  |
+|            +o . |
+|             o+ +|
+|        S o oo +*|
+|         o oo++Bo|
+|          +. .*+B|
+|           +o.+BX|
+|          . o**EX|
++----[SHA256]-----+
+[alice@fedora ~]$ cat .ssh/id_ed25519.pub
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG8Obx1FsUu1jlYDtzfEDHYSDjG82xE7ysxZVzhgpGC5 alice@fedora
+[alice@fedora ~] $ exit
+
+[pavel@fedora ~] $ sudo su - bob
+[bob@fedora ~] $ ssh-keygen -t ed25519
+. . . . Same dialogue . . . .
+[bob@fedora ~] $ exit
+
+
+[pavel@fedora ~] $ sudo su - charlie
+[charlie@fedora ~] $ ssh-keygen -t ed25519
+. . . . Same dialogue . . . .
+[charlie@fedora ~] $ exit
+----
+
+== Create fingerprints
+
+Now I wore my sysadmin hat and told my users: "I trust you. I want to give you root access to my server.
+But I need your public keys."
+
+"Great!" Alice, Bob, and Charlie answered. "How can we do it?"
+
+"Login to your accounts.
+Your public key is this file: `~/.ssh/id_ed25519.pub`.
+It's just a one-line text file.
+You can include it in the mail body or attach as a file.
+Remember: don't share your _private_ key--the one without `.pub`--with anybody!
+Keep it private!"
+
+My users started working and in several minutes I received an email from each of them containing the following information:
+
+[source,none]
+----
+From: alice
+To: sysadmin
+Subject: my public key
+
+Hi Sysadmin,
+
+Here is my public key (I copied it from id_ed25519.pub, as you told us):
+
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG8Obx1FsUu1jlYDtzfEDHYSDjG82xE7ysxZVzhgpGC5 alice@fedora
+
+I hope this works.
+
+Thanks,
+Alice
+----
+
+== Add the public keys to the host
+
+The easiest way to give access to somebody to any account, including `root` is to add that user's public key to the file `.ssh/authorized_keys` in that account's home directory.
+This is exactly what I did for the `root` user on my lab server.
+I opened (with Vim, of course) the file `/root/.ssh/authorized_keys` and entered these three entries (the public keys from my users):
+
+[source,none]
+----
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG8Obx1FsUu1jlYDtzfEDHYSDjG82xE7ysxZVzhgpGC5 alice@fedora
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJgclT4eQ5RlYabZfkdjFV5wGrroXxmd5n2X7okmiaN8 bob@fedora
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJWcjljox2NKwDFllZ5KQc4LSVrBEKoaOE/t/up1XbyD charlie@fedora
+----
+
+Now the system is ready for a test.
+
+== Test access
+
+I went to my users and told them: "The system is ready, feel free to test your access!
+First time you login the system will ask you if you trust the host you are logging in.
+Answer `yes`. It will be added to the list of known hosts--check it later in `~/.ssh/known_hosts`--
+and next time you won't be asked for confirmation."
+
+Alice, Bob, and Charlie opened their terminals on the Fedora machine and tried:
+
+[source,console,subs="normal"]
+----
+[bob@fedora ~] $ ssh -l root 192.168.1.234
+The authenticity of host '192.168.1.234 (192.168.1.234)' can't be established.
+ED25519 key fingerprint is SHA256:mhS0bPdGrEIwwMKJdKxpkxLdtYKNp0+FSgwqybeugd8.
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])? *(Bob typed 'yes')*
+Warning: Permanently added '192.168.1.234' (ED25519) to the list of known hosts.
+
+Last login: Wed Apr 26 09:06:21 2023 from 192.168.1.24
+[root@rhel-lab ~]#
+----
+
+"Wow! That was easy!" Bob said. "Look, no password!"
+
+"I told you!" I said.
+"But keep in mind: each of you comes to the server with your own key.
+That means the server's admin will always know who logged in as root: Alice, Bob, or Charlie.
+Please be considerate when working as root on this host."
+
+I said this to my users, but I wasn't ready yet to watch their logins.
+It was time to prepare.
+
+== Check the logs
+
+"They just logged in and out recently," I thought. "It should be at the end of the log."
+
+In Red Hat Enterprise Linux the log file where all security-related events are stored is called `/var/log/secure.`
+Let's check its last 30 lines.
+
+[source,console]
+----
+# tail -30  /var/log/secure
+Apr 27 10:21:19 deep-rh sshd[1337250]: Accepted publickey for root from 192.168.1.24 port 49090 ssh2: ED25519 SHA256:5xuxPx8QnPv19/6IZ5frmQj1N0hRCP9J364ddE6avL8
+Apr 27 10:21:19 deep-rh systemd[1337257]: pam_unix(systemd-user:session): session opened for user root by (uid=0)
+Apr 27 10:21:19 deep-rh sshd[1337250]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Apr 27 10:21:22 deep-rh sshd[1337282]: Received disconnect from 192.168.1.24 port 49090:11: disconnected by user
+Apr 27 10:21:22 deep-rh sshd[1337282]: Disconnected from user root 192.168.1.24 port 49090
+Apr 27 10:21:22 deep-rh sshd[1337250]: pam_unix(sshd:session): session closed for user root
+Apr 27 10:21:32 deep-rh systemd[1337261]: pam_unix(systemd-user:session): session closed for user root
+Apr 27 10:21:34 deep-rh sshd[1337458]: Accepted publickey for root from 192.168.1.24 port 41254 ssh2: ED25519 SHA256:is6l6bRqCCBVKunT+zVGHoUF0A06p8lt/04EoRbyCUY
+Apr 27 10:21:34 deep-rh systemd[1337467]: pam_unix(systemd-user:session): session opened for user root by (uid=0)
+Apr 27 10:21:34 deep-rh sshd[1337458]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Apr 27 10:21:37 deep-rh sshd[1337493]: Received disconnect from 192.168.1.24 port 41254:11: disconnected by user
+Apr 27 10:21:37 deep-rh sshd[1337493]: Disconnected from user root 192.168.1.24 port 41254
+Apr 27 10:21:37 deep-rh sshd[1337458]: pam_unix(sshd:session): session closed for user root
+Apr 27 10:21:47 deep-rh systemd[1337472]: pam_unix(systemd-user:session): session closed for user root
+Apr 27 10:21:55 deep-rh sshd[1337680]: Accepted publickey for root from 192.168.1.24 port 42552 ssh2: ED25519 SHA256:QgAov0UZI25hWxnbLiHa00j64/zD1m80UMsSIZtxr2s
+Apr 27 10:21:55 deep-rh systemd[1337706]: pam_unix(systemd-user:session): session opened for user root by (uid=0)
+Apr 27 10:21:55 deep-rh sshd[1337680]: pam_unix(sshd:session): session opened for user root by (uid=0)
+Apr 27 10:21:58 deep-rh sshd[1337730]: Received disconnect from 192.168.1.24 port 42552:11: disconnected by user
+Apr 27 10:21:58 deep-rh sshd[1337730]: Disconnected from user root 192.168.1.24 port 42552
+Apr 27 10:21:58 deep-rh sshd[1337680]: pam_unix(sshd:session): session closed for user root
+Apr 27 10:22:08 deep-rh systemd[1337710]: pam_unix(systemd-user:session): session closed for user root
+----
+
+"Good," I thought. "I can see their logins and logouts, I can see the IPs from which they logged in.
+But how how can I figure out who logged in when?"
+
+After a bit of googling I found out that the string that goes after `ED25519 SHA256:` is a fingerprint of the user's public key.
+I just have to connect the fingerprints with the public keys."
+
+== Create a fingerprints key database
+
+Fingerprints are useless unless you have collected a good database of them.
+This is what I did after receiving the emails from my users.
+
+On the lab host (`rhel-lab`) I saved the users' public keys in a separate directory under `/root`.
+Of course, I made it readable only by root.
+
+[source,console]
+----
+# mkdir ~/ssh-keys
+# chmod 0700 ~/ssh-keys
+# cd ~/ssh-keys
+----
+
+I copied the users' public keys that they sent me here and added the owner's name to each file.
+
+[source,console]
+----
+# echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG8Obx1FsUu1jlYDtzfEDHYSDjG82xE7ysxZVzhgpGC5 alice@fedora" > alice_id_ed25519.pub
+# echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJgclT4eQ5RlYabZfkdjFV5wGrroXxmd5n2X7okmiaN8 bob@fedora" > bob_id_ed25519.pub
+# echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJWcjljox2NKwDFllZ5KQc4LSVrBEKoaOE/t/up1XbyD charlie@fedora" > charlie_id_ed25519.pub
+# ls -l *pub
+-rw-r--r--. 1 root root 94 Apr 27 09:53 alice_id_ed25519.pub
+-rw-r--r--. 1 root root 92 Apr 27 09:54 bob_id_ed25519.pub
+-rw-r--r--. 1 root root 96 Apr 27 09:54 charlie_id_ed25519.pub
+----
+
+Then I ran the following command against each public key file to create its fingerprint.
+
+[source,console]
+----
+# ssh-keygen -lf alice_id_ed25519.pub
+256 SHA256:5xuxPx8QnPv19/6IZ5frmQj1N0hRCP9J364ddE6avL8 alice@fedora (ED25519)
+# ssh-keygen -lf bob_id_ed25519.pub
+256 SHA256:is6l6bRqCCBVKunT+zVGHoUF0A06p8lt/04EoRbyCUY bob@fedora (ED25519)
+# ssh-keygen -lf charlie_id_ed25519.pub
+256 SHA256:QgAov0UZI25hWxnbLiHa00j64/zD1m80UMsSIZtxr2s charlie@fedora (ED25519)
+----
+
+In the same directory I opened a file called `users.csv` and added three records in a form of `username,fingerprint`, like this:
+
+.users.csv
+[source,none]
+----
+alice,5xuxPx8QnPv19/6IZ5frmQj1N0hRCP9J364ddE6avL8
+bob,is6l6bRqCCBVKunT+zVGHoUF0A06p8lt/04EoRbyCUY
+charlie,QgAov0UZI25hWxnbLiHa00j64/zD1m80UMsSIZtxr2s
+----
+
+Now I need a program that would scan the `/var/log/secure` file, find login and logout messages,
+parse them to find the fingerprint, and lookup the user based on their fingerprint in the database.
+
+== Create a log monitoring application
+
+Recently I started learning Go, so for each new idea I try to use Go to practice.
+This problem looked like a good exercise.
+
+You can find my Go code here, in `main.go`.
+The program's logic is pretty simple:
+
+* Scan the log file and create a list of login/logout events
+* For each login event find the user based on their fingerprint
+* Create a list of sessions and add login events to it
+* For each logout event find the corresponding login event based on the source IP and the port and update the end time of the session
+* Output all sessions with user names, source IPs, start/end times, and duration.
+
+The most challenging part was to parse the log file and collect all necessary fields from it.
+That's why the regular expressions might look scary.
+
+Testing the program on a short fragment of `/var/log/secure` showed this:
+
+[source,none]
+----
+# go run main.go
+alice   192.168.1.24    2023-04-27 10:21:19     2023-04-27 10:21:22     3s
+bob     192.168.1.24    2023-04-27 10:21:34     2023-04-27 10:21:37     3s
+charlie 192.168.1.24    2023-04-27 10:21:55     2023-04-27 10:21:58     3s
+----
+
+Of course, I have to add CLI arguments to parse different log files and use different CSV databases.
+Using a more "serious" database could be also added.
+And, of course, in a truly Go manner, I should add tests.
+I'll work on all that soon.
+
+

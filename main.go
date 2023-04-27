@@ -13,7 +13,6 @@ import (
 type User struct {
 	Username    string
 	Fingerprint string
-	PublicKey   string
 }
 
 type SessionEvent struct {
@@ -49,7 +48,6 @@ func getUsers(filename string, users *[]User) error {
 		user := User{
 			Username:    record[0],
 			Fingerprint: record[1],
-			PublicKey:   record[2],
 		}
 		*users = append(*users, user)
 	}
