@@ -33,6 +33,19 @@ type Session struct {
 	EndTime   time.Time
 }
 
+/*
+getUsers reads a CSV file specified by filename and appends each record to the
+slice pointed to by users. The CSV file is expected to have two fields per
+record: a username and a fingerprint. If the file cannot be opened, or if there
+is an error reading the file, an error is returned.
+
+Parameters:
+  - filename (string): the path to the CSV file to read
+  - users (*[]User): a pointer to a slice of User structs to append to
+
+Returns:
+  - error: an error if one occurred, or nil if successful
+*/
 func getUsers(filename string, users *[]User) error {
 	f, err := os.Open(filename)
 	if err != nil {
@@ -57,7 +70,16 @@ func getUsers(filename string, users *[]User) error {
 
 }
 
-// Create a user map with fingerprint as key and username as value
+/*
+createUserMap takes in a slice of User objects and returns a map with
+the user's fingerprint as the key and the User object as the value.
+
+Parameters:
+  - users ([]User): a slice of User objects.
+
+Returns:
+  - (map[string]User): a map with the user's fingerprint as the key and the User object as the value.
+*/
 func createUserMap(users []User) map[string]User {
 	userMap := make(map[string]User)
 	for _, user := range users {
@@ -66,9 +88,21 @@ func createUserMap(users []User) map[string]User {
 	return userMap
 }
 
-// Read the log file and find root login and logout events using patterns
-// login_pattern: "Accepted publickey for root"
-// logout_pattern: "Disconnected from user root"
+/*
+logToEvents takes a filename string and a pointer to a slice of User structs.
+It returns a slice of SessionEvent structs and an error. This function reads
+a log file, parses each line, and creates SessionEvent structs based on the
+contents of each line. The SessionEvent structs are returned in a slice.
+
+Parameters:
+  - filename: string representing the path to the log file to be read
+
+users - pointer to a slice of User structs to be used when creating SessionEvent
+structs
+
+Returns:
+  - ([]SessionEvent): a slice of SessionEvent structs and an error, if it occurs
+*/
 func logToEvents(filename string, users *[]User) ([]SessionEvent, error) {
 	f, err := os.Open(filename)
 	if err != nil {
@@ -79,9 +113,9 @@ func logToEvents(filename string, users *[]User) ([]SessionEvent, error) {
 	uMap := createUserMap(*users)
 	events := make([]SessionEvent, 0)
 
-	// regexp for login_pattern
+	// regexp for login pattern
 	reLogin := regexp.MustCompile(`Accepted publickey for root`)
-	// regexp for logout_pattern
+	// regexp for logout pattern
 	reLogout := regexp.MustCompile(`Disconnected from user root`)
 	reParseLogin := regexp.MustCompile(`(?P<date>[A-Z][a-z]{2} [0-9]{2}) (?P<time>[0-9]{2}:[0-9]{2}:[0-9]{2})` +
 		`.* (?P<loginIP>[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}) ` +
@@ -92,7 +126,6 @@ func logToEvents(filename string, users *[]User) ([]SessionEvent, error) {
 		`port (?P<port>[0-9]{1,6})`)
 
 	scanner := bufio.NewScanner(f)
-	//	var events []SessionEvent
 	for scanner.Scan() {
 		line := scanner.Text()
 		if line == "" {
@@ -148,6 +181,17 @@ func logToEvents(filename string, users *[]User) ([]SessionEvent, error) {
 	return events, nil
 }
 
+/*
+eventsToSessions converts a slice of SessionEvent into a slice of Session.
+It maintains a mapping of port to the user that logged in using that port,
+and uses this mapping to pair logout events with their corresponding login events.
+
+Parameters:
+  - events: The slice of SessionEvent to be converted to Session.
+
+Returns:
+  - sessions: A slice of Session representing the sessions created by the given events.
+*/
 func eventsToSessions(events []SessionEvent) []Session {
 	sessions := []Session{}
 	portToUser := make(map[string]string)
