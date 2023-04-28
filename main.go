@@ -8,6 +8,8 @@ import (
 	"os"
 	"regexp"
 	"time"
+
+	flag "github.com/spf13/pflag"
 )
 
 type User struct {
@@ -180,13 +182,22 @@ func eventsToSessions(events []SessionEvent) []Session {
 }
 
 func main() {
+	usersDB := flag.StringP("users", "u", "users.csv", "CSV file with users fingerprints")
+	logFile := flag.StringP("log", "l", "secure.log", "Log file to parse")
+	needHelp := flag.BoolP("help", "h", false, "This help message")
+	flag.Parse()
+
+	if *needHelp {
+		flag.Usage()
+		os.Exit(1)
+	}
 	users := make([]User, 0)
-	err := getUsers("users.csv", &users)
+	err := getUsers(*usersDB, &users)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	events, err := logToEvents("secure.log", &users)
+	events, err := logToEvents(*logFile, &users)
 	if err != nil {
 		log.Fatal(err)
 	}
