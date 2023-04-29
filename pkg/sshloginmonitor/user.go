@@ -2,7 +2,8 @@ package sshloginmonitor
 
 import (
 	"encoding/csv"
-	"os"
+	"errors"
+	"io"
 )
 
 type User struct {
@@ -21,20 +22,20 @@ type User struct {
 //
 // Returns:
 //   - error: an error if one occurred, or nil if successful
-func GetUsers(filename string, users *[]User) error {
-	f, err := os.Open(filename)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	csvReader := csv.NewReader(f)
+func GetUsers(reader io.Reader, users *[]User) error {
+	csvReader := csv.NewReader(reader)
 	records, err := csvReader.ReadAll()
 	if err != nil {
 		return err
 	}
+	if len(records) == 0 {
+		return errors.New("no users in the file")
+	}
 
 	for _, record := range records {
+		if len(record) < 2 {
+			return errors.New("missing fingerprint")
+		}
 		user := User{
 			Username:    record[0],
 			Fingerprint: record[1],

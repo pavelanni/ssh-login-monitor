@@ -20,7 +20,13 @@ func main() {
 		os.Exit(1)
 	}
 	users := make([]sshloginmonitor.User, 0)
-	err := sshloginmonitor.GetUsers(*usersDB, &users)
+	f, err := os.Open(*usersDB)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+
+	err = sshloginmonitor.GetUsers(f, &users)
 	if err != nil {
 		log.Fatal(err)
 	}
