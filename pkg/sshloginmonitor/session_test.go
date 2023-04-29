@@ -177,3 +177,52 @@ Apr 27 10:21:37 deep-rh sshd[1337458]: pam_unix(sshd:session): session closed fo
 		})
 	}
 }
+
+func TestEventsToSessions(t *testing.T) {
+	type args struct {
+		events []SessionEvent
+	}
+	tests := []struct {
+		name string
+		args args
+		want []Session
+	}{
+		{
+			name: "valid events to sessions",
+			args: args{
+				events: []SessionEvent{
+					{
+						EventType: "login",
+						EventTime: time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
+						Username:  "user1",
+						SourceIP:  "192.168.1.24",
+						Port:      "49090",
+					},
+					{
+						EventType: "logout",
+						EventTime: time.Date(2023, 1, 1, 0, 1, 0, 0, time.UTC),
+						Username:  "user1",
+						SourceIP:  "192.168.1.24",
+						Port:      "49090",
+					},
+				},
+			},
+			want: []Session{
+				{
+					Username:  "user1",
+					SourceIP:  "192.168.1.24",
+					Port:      "49090",
+					StartTime: time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
+					EndTime:   time.Date(2023, 1, 1, 0, 1, 0, 0, time.UTC),
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := EventsToSessions(tt.args.events); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("EventsToSessions() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
