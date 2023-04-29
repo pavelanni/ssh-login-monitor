@@ -25,21 +25,19 @@ type Session struct {
 	EndTime   time.Time
 }
 
-/*
-LogToEvents takes a filename string and a pointer to a slice of User structs.
-It returns a slice of SessionEvent structs and an error. This function reads
-a log file, parses each line, and creates SessionEvent structs based on the
-contents of each line. The SessionEvent structs are returned in a slice.
-
-Parameters:
-  - filename: string representing the path to the log file to be read
-
-users - pointer to a slice of User structs to be used when creating SessionEvent
-structs
-
-Returns:
-  - ([]SessionEvent): a slice of SessionEvent structs and an error, if it occurs
-*/
+// LogToEvents takes a filename string and a pointer to a slice of User structs.
+// It returns a slice of SessionEvent structs and an error. This function reads
+// a log file, parses each line, and creates SessionEvent structs based on the
+// contents of each line. The SessionEvent structs are returned in a slice.
+//
+// Parameters:
+//   - filename: string representing the path to the log file to be read
+//
+// users - pointer to a slice of User structs to be used when creating SessionEvent
+// structs
+//
+// Returns:
+//   - ([]SessionEvent): a slice of SessionEvent structs and an error, if it occurs
 func LogToEvents(filename string, users *[]User) ([]SessionEvent, error) {
 	f, err := os.Open(filename)
 	if err != nil {
@@ -47,7 +45,10 @@ func LogToEvents(filename string, users *[]User) ([]SessionEvent, error) {
 	}
 	defer f.Close()
 
-	uMap := createUserMap(*users)
+	uMap, err := createUserMap(*users)
+	if err != nil {
+		return nil, err
+	}
 	events := make([]SessionEvent, 0)
 
 	// regexp for login pattern
@@ -118,17 +119,15 @@ func LogToEvents(filename string, users *[]User) ([]SessionEvent, error) {
 	return events, nil
 }
 
-/*
-EventsToSessions converts a slice of SessionEvent into a slice of Session.
-It maintains a mapping of port to the user that logged in using that port,
-and uses this mapping to pair logout events with their corresponding login events.
-
-Parameters:
-  - events: The slice of SessionEvent to be converted to Session.
-
-Returns:
-  - sessions: A slice of Session representing the sessions created by the given events.
-*/
+// EventsToSessions converts a slice of SessionEvent into a slice of Session.
+// It maintains a mapping of port to the user that logged in using that port,
+// and uses this mapping to pair logout events with their corresponding login events.
+//
+// Parameters:
+//   - events: The slice of SessionEvent to be converted to Session.
+//
+// Returns:
+//   - sessions: A slice of Session representing the sessions created by the given events.
 func EventsToSessions(events []SessionEvent) []Session {
 	sessions := []Session{}
 	portToUser := make(map[string]string)
