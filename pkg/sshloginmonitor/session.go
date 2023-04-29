@@ -3,8 +3,8 @@ package sshloginmonitor
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
-	"os"
 	"regexp"
 	"time"
 )
@@ -38,13 +38,7 @@ type Session struct {
 //
 // Returns:
 //   - ([]SessionEvent): a slice of SessionEvent structs and an error, if it occurs
-func LogToEvents(filename string, users *[]User) ([]SessionEvent, error) {
-	f, err := os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
+func LogToEvents(reader io.Reader, users *[]User) ([]SessionEvent, error) {
 	uMap, err := createUserMap(*users)
 	if err != nil {
 		return nil, err
@@ -63,7 +57,7 @@ func LogToEvents(filename string, users *[]User) ([]SessionEvent, error) {
 		`.* (?P<loginIP>[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}) ` +
 		`port (?P<port>[0-9]{1,6})`)
 
-	scanner := bufio.NewScanner(f)
+	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		line := scanner.Text()
 		if line == "" {
@@ -71,15 +65,18 @@ func LogToEvents(filename string, users *[]User) ([]SessionEvent, error) {
 		}
 		if reLogin.MatchString(line) {
 			match := reParseLogin.FindStringSubmatch(line)
+			if match == nil {
+				log.Println("invalid event: " + line)
+				continue
+			}
 			result := make(map[string]string)
 			for i, name := range reParseLogin.SubexpNames() {
 				if i != 0 {
 					result[name] = match[i]
 				}
 			}
-			d := result["date"]
-			t := result["time"]
-			eventTime, err := time.Parse("2006 Jan 02 15:04:05", fmt.Sprintf("%d ", time.Now().Year())+d+" "+t)
+			eventTime, err := time.Parse("2006 Jan 02 15:04:05",
+				fmt.Sprintf("%d ", time.Now().Year())+result["date"]+" "+result["time"])
 			if err != nil {
 				return nil, err
 			}
@@ -94,6 +91,10 @@ func LogToEvents(filename string, users *[]User) ([]SessionEvent, error) {
 		}
 		if reLogout.MatchString(line) {
 			match := reParseLogout.FindStringSubmatch(line)
+			if match == nil {
+				log.Println("invalid event: " + line)
+				continue
+			}
 			result := make(map[string]string)
 			for i, name := range reParseLogout.SubexpNames() {
 				if i != 0 {
@@ -154,7 +155,7 @@ func EventsToSessions(events []SessionEvent) []Session {
 					}
 				}
 			} else {
-				log.Printf("%s port not found", port)
+				log.Printf("port %s not found\n", port)
 			}
 		}
 	}

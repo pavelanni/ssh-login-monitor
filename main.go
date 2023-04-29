@@ -31,7 +31,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	events, err := sshloginmonitor.LogToEvents(*logFile, &users)
+	logF, err := os.Open(*logFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer logF.Close()
+
+	events, err := sshloginmonitor.LogToEvents(logF, &users)
 	if err != nil {
 		log.Fatal(err)
 	}
