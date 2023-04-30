@@ -1,9 +1,13 @@
 package sshloginmonitor
 
 import (
+	"bufio"
 	"encoding/csv"
 	"errors"
 	"io"
+	"strings"
+
+	"golang.org/x/crypto/ssh"
 )
 
 type User struct {
@@ -43,5 +47,22 @@ func GetUsers(reader io.Reader, users *[]User) error {
 		*users = append(*users, user)
 	}
 	return nil
+}
 
+func GetAuthKeys(reader io.Reader, users *[]User) error {
+	scanner := bufio.NewScanner(reader)
+	scanner.Split(bufio.ScanLines)
+	for scanner.Scan() {
+		out, comment, _, _, err := ssh.ParseAuthorizedKey([]byte(scanner.Text()))
+		if err != nil {
+			return err
+		}
+		fingerprint := strings.Split(ssh.FingerprintSHA256(out), ":")[1]
+		user := User{
+			Username:    comment,
+			Fingerprint: fingerprint,
+		}
+		*users = append(*users, user)
+	}
+	return nil
 }

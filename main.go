@@ -11,6 +11,7 @@ import (
 
 func main() {
 	usersDB := flag.StringP("users", "u", "users.csv", "CSV file with users fingerprints")
+	authKeys := flag.StringP("authkeys", "a", "", "authorized_keys file containing public keys")
 	logFile := flag.StringP("log", "l", "secure.log", "Log file to parse")
 	needHelp := flag.BoolP("help", "h", false, "This help message")
 	flag.Parse()
@@ -29,6 +30,19 @@ func main() {
 	err = sshloginmonitor.GetUsers(f, &users)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if *authKeys != "" {
+		f, err = os.Open(*authKeys)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+
+		err = sshloginmonitor.GetAuthKeys(f, &users)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	logF, err := os.Open(*logFile)
