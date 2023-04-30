@@ -2,6 +2,8 @@
 From a friendly discussion about server security to using AI for coding
 
 
+UPDATE: this story is now published on Medium: https://medium.com/@pavelanni/ssh-login-monitor-426007503ef6
+
 I noticed that a friend of mine routinely logs into his lab servers via SSH using the `root` username and password.
 
 "Why do you do that?" I asked.
