@@ -2,6 +2,7 @@
 
 * [ ] Use a database for fingerprints. BoltDB (or its BBolt reincarnation) might be a good choice
 * [ ] For database use: add functions to add and delete fingerprints from the DB; both manual and batch
+* [ ] Generate fingerprints inside the app: take usernames and public keys as an input. Maybe read them from `authorized_keys`.
 * [ ] Check if logout time is later than login time for a session with the same port number
 * [ ] Mark and include in the report logouts without logins and logins without logouts
 * [ ] Think about storing fingerprints in LDAP
