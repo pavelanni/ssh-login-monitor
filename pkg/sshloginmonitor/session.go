@@ -7,6 +7,8 @@ import (
 	"log"
 	"regexp"
 	"time"
+
+	bolt "go.etcd.io/bbolt"
 )
 
 type SessionEvent struct {
@@ -38,11 +40,7 @@ type Session struct {
 //
 // Returns:
 //   - ([]SessionEvent): a slice of SessionEvent structs and an error, if it occurs
-func LogToEvents(reader io.Reader, users *[]User) ([]SessionEvent, error) {
-	uMap, err := createUserMap(*users)
-	if err != nil {
-		return nil, err
-	}
+func LogToEvents(reader io.Reader, db *bolt.DB, bucket string) ([]SessionEvent, error) {
 	events := make([]SessionEvent, 0)
 
 	// regexp for login pattern
@@ -80,10 +78,19 @@ func LogToEvents(reader io.Reader, users *[]User) ([]SessionEvent, error) {
 			if err != nil {
 				return nil, err
 			}
+			username, err := GetUserByFingerprint(result["fingerprint"], db, bucket)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+			if username == "" {
+				log.Println("username not found in line " + line)
+				continue
+			}
 			event := SessionEvent{
 				EventType: "login",
 				EventTime: eventTime,
-				Username:  uMap[result["fingerprint"]].Username,
+				Username:  username,
 				SourceIP:  result["loginIP"],
 				Port:      result["port"],
 			}
@@ -155,7 +162,7 @@ func EventsToSessions(events []SessionEvent) []Session {
 					}
 				}
 			} else {
-				log.Printf("port %s not found\n", port)
+				log.Printf("login event for port %s not found\n", port)
 			}
 		}
 	}

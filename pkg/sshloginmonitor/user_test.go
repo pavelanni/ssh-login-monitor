@@ -1,14 +1,13 @@
 package sshloginmonitor
 
 import (
-	"errors"
 	"io"
 	"reflect"
 	"strings"
 	"testing"
 )
 
-func TestGetUsers(t *testing.T) {
+func TestGetAuthKeys(t *testing.T) {
 	type args struct {
 		reader io.Reader
 		users  *[]User
@@ -20,43 +19,40 @@ func TestGetUsers(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "valid users and fingerprints",
-			args: args{
-				reader: strings.NewReader("user1,fingerprint1\nuser2,fingerprint2\n"),
-				users:  &[]User{},
-			},
-			want:    &[]User{{Username: "user1", Fingerprint: "fingerprint1"}, {Username: "user2", Fingerprint: "fingerprint2"}},
-			wantErr: nil,
-		},
-		{
-			name: "empty file",
+			name: "empty authorized keys file",
 			args: args{
 				reader: strings.NewReader(""),
 				users:  &[]User{},
 			},
 			want:    &[]User{},
-			wantErr: errors.New("no users in the file"),
+			wantErr: nil,
 		},
 		{
-			name: "missing fingerprint",
+			name: "valid authorized keys file",
 			args: args{
-				reader: strings.NewReader("user1\nuser2\n"),
-				users:  &[]User{},
+				reader: strings.NewReader(`ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG8Obx1FsUu1jlYDtzfEDHYSDjG82xE7ysxZVzhgpGC5 alice@fedora
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJgclT4eQ5RlYabZfkdjFV5wGrroXxmd5n2X7okmiaN8 bob@fedora
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJWcjljox2NKwDFllZ5KQc4LSVrBEKoaOE/t/up1XbyD charlie@fedora`),
+				users: &[]User{},
 			},
-			want:    &[]User{},
-			wantErr: errors.New("missing fingerprint"),
+			want: &[]User{
+				{Username: "alice@fedora", Fingerprint: "5xuxPx8QnPv19/6IZ5frmQj1N0hRCP9J364ddE6avL8"},
+				{Username: "bob@fedora", Fingerprint: "is6l6bRqCCBVKunT+zVGHoUF0A06p8lt/04EoRbyCUY"},
+				{Username: "charlie@fedora", Fingerprint: "QgAov0UZI25hWxnbLiHa00j64/zD1m80UMsSIZtxr2s"},
+			},
+			wantErr: nil,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := GetUsers(tt.args.reader, tt.args.users)
+			err := GetAuthKeys(tt.args.reader, tt.args.users)
 			if err != nil {
 				if err.Error() != tt.wantErr.Error() {
-					t.Errorf("GetUsers() error = %v, wantErr %v", err, tt.wantErr)
+					t.Errorf("GetAuthKeys() error = %v, wantErr %v", err, tt.wantErr)
 				}
 			} else {
-				if !reflect.DeepEqual(*tt.args.users, *tt.want) {
-					t.Errorf("GetUsers() = %v, want %v", *tt.args.users, *tt.want)
+				if !reflect.DeepEqual(tt.args.users, tt.want) {
+					t.Errorf("GetAuthKeys() = %v, want %v", tt.args.users, tt.want)
 				}
 			}
 		})

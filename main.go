@@ -7,11 +7,14 @@ import (
 
 	"github.com/pavelanni/ssh-login-monitor/pkg/sshloginmonitor"
 	flag "github.com/spf13/pflag"
+	bolt "go.etcd.io/bbolt"
 )
 
 func main() {
-	usersDB := flag.StringP("users", "u", "users.csv", "CSV file with users fingerprints")
+	authKeys := flag.StringP("authkeys", "a", "", "authorized_keys file containing public keys")
+	bucketName := flag.StringP("bucket", "b", "LoginMonitor", "Bucket name")
 	logFile := flag.StringP("log", "l", "secure.log", "Log file to parse")
+	dbFile := flag.StringP("database", "d", "fingerprints.db", "Fingerprints database")
 	needHelp := flag.BoolP("help", "h", false, "This help message")
 	flag.Parse()
 
@@ -19,16 +22,41 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
-	users := make([]sshloginmonitor.User, 0)
-	f, err := os.Open(*usersDB)
+
+	db, err := bolt.Open(*dbFile, 0600, nil)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	err = db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists([]byte(*bucketName))
+		if err != nil {
+			return fmt.Errorf("create bucket: %s", err)
+		}
+		return nil
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer f.Close()
 
-	err = sshloginmonitor.GetUsers(f, &users)
-	if err != nil {
-		log.Fatal(err)
+	if *authKeys != "" {
+		users := make([]sshloginmonitor.User, 0)
+
+		f, err := os.Open(*authKeys)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer f.Close()
+
+		err = sshloginmonitor.GetAuthKeys(f, &users)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = sshloginmonitor.AddUsersToDB(users, db, *bucketName)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	logF, err := os.Open(*logFile)
@@ -37,7 +65,7 @@ func main() {
 	}
 	defer logF.Close()
 
-	events, err := sshloginmonitor.LogToEvents(logF, &users)
+	events, err := sshloginmonitor.LogToEvents(logF, db, *bucketName)
 	if err != nil {
 		log.Fatal(err)
 	}
