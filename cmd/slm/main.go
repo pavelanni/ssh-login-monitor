@@ -13,6 +13,7 @@ import (
 func main() {
 	authKeys := flag.StringP("authkeys", "a", "", "authorized_keys file containing public keys")
 	bucketName := flag.StringP("bucket", "b", "LoginMonitor", "Bucket name")
+	outputFormat := flag.StringP("output", "o", "sum", "Output format: sum, log, csv, json")
 	logFile := flag.StringP("log", "l", "secure.log", "Log file to parse")
 	dbFile := flag.StringP("database", "d", "fingerprints.db", "Fingerprints database")
 	needHelp := flag.BoolP("help", "h", false, "This help message")
@@ -72,10 +73,10 @@ func main() {
 
 	sessions := sshloginmonitor.EventsToSessions(events)
 
-	for _, session := range sessions {
-		fmt.Printf("%s\t%s\t%s\t%s\t%s\n", session.Username, session.SourceIP,
-			session.StartTime.Format("2006-01-02 15:04:05"),
-			session.EndTime.Format("2006-01-02 15:04:05"),
-			session.EndTime.Sub(session.StartTime))
+	switch *outputFormat {
+	case "sum":
+		sshloginmonitor.PrintSummary(sessions)
+	case "log":
+		sshloginmonitor.PrintLog(events)
 	}
 }
