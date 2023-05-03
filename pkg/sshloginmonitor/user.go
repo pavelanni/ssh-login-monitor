@@ -102,6 +102,9 @@ func GetUserByFingerprint(fp string, db *bolt.DB, bucket string) (string, error)
 	var username string
 	err := db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(bucket))
+		if b == nil {
+			return errors.New("bucket not found")
+		}
 		username = string(b.Get([]byte(fp)))
 		return nil
 	})
