@@ -80,5 +80,7 @@ func main() {
 		sshloginmonitor.PrintLog(events)
 	case "csv":
 		sshloginmonitor.PrintCSV(events)
+	case "json":
+		sshloginmonitor.PrintJSON(events)
 	}
 }

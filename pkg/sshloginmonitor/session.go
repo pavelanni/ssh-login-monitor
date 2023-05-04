@@ -12,19 +12,19 @@ import (
 )
 
 type SessionEvent struct {
-	EventType string
-	EventTime time.Time
-	Username  string
-	SourceIP  string
-	Port      string
+	EventType string    `json:"event_type"`
+	EventTime time.Time `json:"event_time"`
+	Username  string    `json:"username"`
+	SourceIP  string    `json:"source_ip"`
+	Port      string    `json:"port"`
 }
 
 type Session struct {
-	Username  string
-	SourceIP  string
-	Port      string
-	StartTime time.Time
-	EndTime   time.Time
+	Username  string    `json:"username"`
+	SourceIP  string    `json:"source_ip"`
+	Port      string    `json:"port"`
+	StartTime time.Time `json:"start_time"`
+	EndTime   time.Time `json:"end_time"`
 }
 
 // LogToEvents takes a filename string and a pointer to a slice of User structs.

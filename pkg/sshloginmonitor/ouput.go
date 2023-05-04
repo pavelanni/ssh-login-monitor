@@ -1,6 +1,10 @@
 package sshloginmonitor
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+	"log"
+)
 
 // PrintSummary takes a slice of Session objects and prints a summary of each session.
 // For each session, the function prints the username, source IP, start time, end time,
@@ -47,4 +51,13 @@ func PrintCSV(events []SessionEvent) {
 		fmt.Printf("%s,%s,%s,%s\n", event.Username, event.EventType, event.SourceIP,
 			event.EventTime.Format("2006-01-02 15:04:05"))
 	}
+}
+
+// PrintJSON prints the given list of SessionEvent objects with the JSON format.
+func PrintJSON(events []SessionEvent) {
+	output, err := json.MarshalIndent(events, "", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(string(output))
 }
