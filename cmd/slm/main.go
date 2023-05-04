@@ -14,7 +14,7 @@ func main() {
 	authKeys := flag.StringP("authkeys", "a", "", "authorized_keys file containing public keys")
 	bucketName := flag.StringP("bucket", "b", "LoginMonitor", "Bucket name")
 	outputFormat := flag.StringP("output", "o", "sum", "Output format: sum, log, csv, json")
-	logFile := flag.StringP("log", "l", "secure.log", "Log file to parse")
+	logFile := flag.StringP("log", "l", "", "Log file to parse. If no log file is specified, it collects the fingerprints and exits.")
 	dbFile := flag.StringP("database", "d", "fingerprints.db", "Fingerprints database")
 	needHelp := flag.BoolP("help", "h", false, "This help message")
 	flag.Parse()
@@ -58,6 +58,11 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+	}
+
+	if *logFile == "" {
+		fmt.Println("No log file specified. Exiting...")
+		os.Exit(1)
 	}
 
 	logF, err := os.Open(*logFile)
