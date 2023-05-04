@@ -36,21 +36,18 @@ charlie@fedora  192.168.1.24    2023-04-27 10:21:55     2023-04-27 10:21:58     
 ----
 
 === Build
-#THIS IS NOT IMPLEMENTED YET#
 
 . Build the application:
 +
 [source,console]
 ----
-make
+make build
 ----
 
-. Install the application (into `$HOME/.local/bin` by default)
-+
-[source,console]
-----
-make install
-----
+By default it builds the binary for the system you are running the build.
+Most likely it's Linux on x86_64, where you are going to use this tool.
+
+Copy the binary from `bin/slm` to the system where you are going to use it.
 
 == Using
 #THIS IS NOT IMPLEMENTED YET#
