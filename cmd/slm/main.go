@@ -16,6 +16,7 @@ func main() {
 	outputFormat := flag.StringP("output", "o", "sum", "Output format: sum, log, csv, json")
 	logFile := flag.StringP("log", "l", "", "Log file to parse. If no log file is specified, it collects the fingerprints and exits.")
 	dbFile := flag.StringP("database", "d", "fingerprints.db", "Fingerprints database")
+	colorFlag := flag.BoolP("color", "c", false, "Color output")
 	needHelp := flag.BoolP("help", "h", false, "This help message")
 	flag.Parse()
 
@@ -80,9 +81,9 @@ func main() {
 
 	switch *outputFormat {
 	case "sum":
-		sshloginmonitor.PrintSummary(sessions)
+		sshloginmonitor.PrintSummary(sessions, *colorFlag)
 	case "log":
-		sshloginmonitor.PrintLog(events)
+		sshloginmonitor.PrintLog(events, *colorFlag)
 	case "csv":
 		sshloginmonitor.PrintCSV(events)
 	case "json":

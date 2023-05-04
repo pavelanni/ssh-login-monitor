@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+
+	"github.com/fatih/color"
 )
 
 // PrintSummary takes a slice of Session objects and prints a summary of each session.
@@ -16,9 +18,15 @@ import (
 //
 // Returns:
 //   - None
-func PrintSummary(sessions []Session) {
+func PrintSummary(sessions []Session, colorFlag bool) {
+	if !colorFlag {
+		color.NoColor = true
+	}
+	usernameColor := color.New(color.FgYellow).SprintFunc()
+	eventTypeColor := color.New(color.FgGreen).SprintFunc()
 	for _, session := range sessions {
-		fmt.Printf("%s\t%s\t%s\t%s\t%s\n", session.Username, session.SourceIP,
+		fmt.Printf("%s\t%s\t%s\t%s\t%s\n", usernameColor(session.Username),
+			eventTypeColor(session.SourceIP),
 			session.StartTime.Format("2006-01-02 15:04:05"),
 			session.EndTime.Format("2006-01-02 15:04:05"),
 			session.EndTime.Sub(session.StartTime))
@@ -32,9 +40,15 @@ func PrintSummary(sessions []Session) {
 //
 // Returns:
 //   - None
-func PrintLog(events []SessionEvent) {
+func PrintLog(events []SessionEvent, colorFlag bool) {
+	if !colorFlag {
+		color.NoColor = true
+	}
+	usernameColor := color.New(color.FgYellow).SprintFunc()
+	eventTypeColor := color.New(color.FgGreen).SprintFunc()
 	for _, event := range events {
-		fmt.Printf("%s\t%s\t%s\t%s\n", event.Username, event.EventType, event.SourceIP,
+		fmt.Printf("%s\t%s\t%s\t%s\n", usernameColor(event.Username),
+			eventTypeColor(event.EventType), event.SourceIP,
 			event.EventTime.Format("2006-01-02 15:04:05"))
 	}
 }
