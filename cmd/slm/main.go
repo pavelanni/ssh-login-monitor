@@ -71,12 +71,14 @@ func main() {
 		log.Fatal(err)
 	}
 
-	sessions := sshloginmonitor.EventsToSessions(events)
+	sessions := sshloginmonitor.EventsToSessions(&events)
 
 	switch *outputFormat {
 	case "sum":
 		sshloginmonitor.PrintSummary(sessions)
 	case "log":
 		sshloginmonitor.PrintLog(events)
+	case "csv":
+		sshloginmonitor.PrintCSV(events)
 	}
 }

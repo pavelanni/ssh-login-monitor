@@ -136,11 +136,11 @@ func LogToEvents(reader io.Reader, db *bolt.DB, bucket string) ([]SessionEvent, 
 //
 // Returns:
 //   - sessions: A slice of Session representing the sessions created by the given events.
-func EventsToSessions(events []SessionEvent) []Session {
+func EventsToSessions(events *[]SessionEvent) []Session {
 	sessions := []Session{}
 	portToUser := make(map[string]string)
 
-	for _, event := range events {
+	for j, event := range *events {
 		if event.EventType == "login" {
 			portToUser[event.Port] = event.Username
 			session := Session{
@@ -153,6 +153,8 @@ func EventsToSessions(events []SessionEvent) []Session {
 		} else if event.EventType == "logout" {
 			port := event.Port
 			if user, ok := portToUser[port]; ok {
+				// update the user in the logout event
+				(*events)[j].Username = user
 				// find the session with the same port in sessions
 				for i, session := range sessions {
 					if session.Username == user && session.SourceIP == event.SourceIP && session.Port == port {

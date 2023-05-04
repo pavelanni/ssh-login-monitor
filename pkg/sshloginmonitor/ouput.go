@@ -34,3 +34,17 @@ func PrintLog(events []SessionEvent) {
 			event.EventTime.Format("2006-01-02 15:04:05"))
 	}
 }
+
+// PrintCSV prints the given list of SessionEvent objects with the CSV format.
+//
+// Parameters:
+//   - events (List[SessionEvent]): The list of SessionEvent objects to be printed.
+//
+// Returns:
+//   - None
+func PrintCSV(events []SessionEvent) {
+	for _, event := range events {
+		fmt.Printf("%s,%s,%s,%s\n", event.Username, event.EventType, event.SourceIP,
+			event.EventTime.Format("2006-01-02 15:04:05"))
+	}
+}
