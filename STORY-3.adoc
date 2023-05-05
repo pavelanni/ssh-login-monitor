@@ -100,7 +100,8 @@ But it wasn't in the log, so this is fine.
 Now I'm pretty sure I could tell it to use the current year if it's missing and it would do it perfectly.
 No doubt.
 
-The code written by ChatGPT is here: https://github.com/pavelanni/ssh-login-monitor/chatgpt-version
+The code written by ChatGPT is here: https://github.com/pavelanni/ssh-login-monitor/tree/main/chatgpt-version
+
 
 
 
