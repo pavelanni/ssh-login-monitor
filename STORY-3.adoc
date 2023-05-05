@@ -1,0 +1,106 @@
+= SSH login monitor (Part 3)
+From a friendly discussion about server security to using AI for coding
+
+:imagesdir: ./assets/images/
+
+
+The beginning of this story is link:STORY.adoc[here].
+The Part 2 is link:STORY-2.adoc[here].
+
+== Describe the problem
+
+I opened the ChatGPT window and typed the problem description.
+
+image::problem.png[The problem description]
+
+I added the log (here is just a fragment).
+
+image::log.png[Log fragment]
+
+And finally I added the `authorized_keys` file.
+
+image::keys.png[Authorized keys]
+
+Let's see what it can do with such a problem!
+
+I didn't wait for too long.
+Almost immediately, ChatGPT started printing.
+(The GPT-4 version prints a bit slower that GPT-3.5 and that creates an effect of "thinking".
+Also, it reminds me those old teletype machines used with _really_ old computers.)
+
+image::fingerprint_calc.png[Fingerprint calculation]
+
+Wait, what?? It's just a language model!
+How could it calculate the fingerprints??
+
+But I didn't have time to answer my own question because ChatGPT continued printing.
+
+image::login_events.png[Login events]
+
+Well, it found the login events based on the string I gave it (him? her?) and connected the fingerprints to those it just calculated.
+Impressive. It even found the timestamps and correctly presented them as timestamps.
+Good job, but that's easy.
+
+Let's continue and ask about logout events.
+
+image::logout_events_problem.png[Logout events problem]
+
+Again, almost without a pause:
+
+image::logout_events.png[Logout events]
+
+Good logic, great explanation! Find the ports and connect them to the login events.
+That means it remembers the login events from the previous task somehow!
+Mind blowing... But let's continue.
+
+If it remembers login and logout events, it should be able to calculate session durations.
+Or not? Again, it's just a language model, it should not know how to do arithmetics.
+Let's ask and see...
+
+image::session_durations.png[Session durations]
+
+Wow! It even explained how it did the calculations! "Show your work," as we were told in school.
+
+I found myself sitting with a dropped jaw a few seconds later.
+(No, it's not just a figure of speech. Literally.)
+
+For a few minutes I couldn't collect my thoughts.
+Yes, it's a language model. Yes, it can find certain phrases and connect them together because
+it has seen those phrases and words many times during training.
+I understand that.
+
+But how can it find numbers (like port numbers) and connect them together?
+And how can it calculate?
+Not only something simple like "37 - 34", but an _SSH public key fingerprint_??
+I can't imagine that the model was trained on all possible public keys and their fingerprints, can you?
+
+After several minutes of shock I got another great idea.
+I had to close the loop.
+
+image::write_program.png[Write a program]
+
+It wrote a piece of Go code, gave me instructions on how to run it, and how to pass
+the input files to it.
+
+Needless to say that I copied the code into my editor and ran it!
+
+[source,none]
+----
+$ go run main.go ../test/secure.log ../test/authorized_keys
+Login: alice - 0000-04-27 10:21:19 - 192.168.1.24:49090
+Logout: alice - 0000-04-27 10:21:22 - 192.168.1.24:49090
+Login: bob - 0000-04-27 10:21:34 - 192.168.1.24:41254
+Logout: bob - 0000-04-27 10:21:37 - 192.168.1.24:41254
+Login: charlie - 0000-04-27 10:21:55 - 192.168.1.24:42552
+Logout: charlie - 0000-04-27 10:21:58 - 192.168.1.24:42552
+----
+
+One minor thing -- it didn't get the current year.
+But it wasn't in the log, so this is fine.
+Now I'm pretty sure I could tell it to use the current year if it's missing and it would do it perfectly.
+No doubt.
+
+The code written by ChatGPT is here: https://github.com/pavelanni/ssh-login-monitor/chatgpt-version
+
+
+

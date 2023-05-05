@@ -1,0 +1,14 @@
+authkeys: "test/authorized_keys"
+bucket: "LoginMonitor"
+output: "sum"
+log: "test/secure.log"
+database: "test/database.db"
+color_flag: "false"
+color:
+  username: green
+  eventtype: yellow
+  eventtime: red
+  sourceip: blue
+  starttime: green
+  endtime: red
+  port: blue
