@@ -7,7 +7,7 @@ From a friendly discussion about server security to using AI for coding
 The beginning of this story is link:STORY.adoc[here].
 The Part 2 is link:STORY-2.adoc[here].
 
-== Describe the problem
+== ChatGPT solves the problem
 
 I opened the ChatGPT window and typed the problem description.
 
