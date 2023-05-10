@@ -1,10 +1,10 @@
-authkeys: "test/authorized_keys"
+authkeys: ""
 bucket: "LoginMonitor"
 output: "sum"
 log: "test/secure.log"
 database: "test/database.db"
-color_flag: "false"
-color:
+color: false
+theme:
   username: green
   eventtype: yellow
   eventtime: red

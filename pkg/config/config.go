@@ -1,49 +1,43 @@
 package config
 
 import (
-	"io"
 	"log"
 	"os"
 
-	"gopkg.in/yaml.v2"
+	"github.com/knadh/koanf/parsers/yaml"
+	"github.com/knadh/koanf/providers/file"
+	"github.com/knadh/koanf/providers/posflag"
+	"github.com/knadh/koanf/v2"
+	flag "github.com/spf13/pflag"
 )
 
-type Color struct {
-	Username  string `yaml:"username"`
-	EventType string `yaml:"eventtype"`
-	EventTime string `yaml:"eventtime"`
-	SourceIP  string `yaml:"sourceip"`
-	StartTime string `yaml:"starttime"`
-	EndTime   string `yaml:"endtime"`
-	Port      string `yaml:"port"`
-}
+var K *koanf.Koanf
 
-type Config struct {
-	AuthKeys     string `yaml:"authkeys"`
-	Bucket       string `yaml:"bucket"`
-	OutputFormat string `yaml:"output"`
-	LogFile      string `yaml:"log"`
-	Database     string `yaml:"database"`
-	ColorFlag    bool   `yaml:"color_flag"`
-	Color        Color  `yaml:"color"`
-}
-
-var Conf Config
-
-func LoadConfig(configFile string) {
-	file, err := os.Open(configFile)
+func LoadKonfig(configFile string) error {
+	var err error
+	K = koanf.New(".")
 	if err != nil {
-		log.Fatalf("Error opening config file: %v", err)
-	}
-	defer file.Close()
-
-	byteValue, err := io.ReadAll(file)
-	if err != nil {
-		log.Fatalf("Error reading config file: %v", err)
+		return err
 	}
 
-	err = yaml.Unmarshal(byteValue, &Conf)
-	if err != nil {
-		log.Fatalf("Error unmarshalling config file: %v", err)
+	if err := K.Load(file.Provider(configFile), yaml.Parser()); err != nil {
+		return err
 	}
+	f := flag.NewFlagSet("config", flag.ContinueOnError)
+
+	f.StringP("authkeys", "a", "", "authorized_keys file containing public keys")
+	f.StringP("bucket", "b", "LoginMonitor", "Bucket name")
+	f.StringP("output", "o", "sum", "Output format: sum, log, csv, json")
+	f.StringP("log", "l", "", "Log file to parse. If no log file is specified, it collects the fingerprints and exits.")
+	f.StringP("database", "d", "fingerprints.db", "Fingerprints database")
+	f.BoolP("color", "c", false, "Color output")
+	if err := f.Parse(os.Args[1:]); err != nil {
+		log.Fatal(err)
+	}
+
+	if err := K.Load(posflag.Provider(f, ".", K), nil); err != nil {
+		log.Fatal(err)
+	}
+
+	return nil
 }
