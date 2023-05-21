@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 
 	"github.com/pavelanni/ssh-login-monitor/pkg/config"
 	"github.com/pavelanni/ssh-login-monitor/pkg/sshloginmonitor"
@@ -58,27 +59,41 @@ func main() {
 		os.Exit(1)
 	}
 
-	logF, err := os.Open(config.K.String("log"))
+	logFile, err := os.Open(config.K.String("log"))
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer logF.Close()
+	defer logFile.Close()
 
-	events, err := sshloginmonitor.LogToEvents(logF, db, config.K.String("bucket"))
-	if err != nil {
-		log.Fatal(err)
+	if config.K.Bool("follow") {
+		// done is the channel to notify the WatchLog function to stop watching and exit
+		done := make(chan struct{})
+		go func() {
+			sigint := make(chan os.Signal, 1)
+			signal.Notify(sigint, os.Interrupt)
+			<-sigint
+			close(done)
+		}()
+
+		sshloginmonitor.WatchLog(logFile, db, config.K.String("bucket"), os.Stdout, done)
+	} else {
+		events, err := sshloginmonitor.LogToEvents(logFile, db, config.K.String("bucket"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		sessions := sshloginmonitor.EventsToSessions(&events)
+
+		switch config.K.String("output") {
+		case "sum":
+			sshloginmonitor.PrintSummary(sessions, config.K.Bool("color"))
+		case "log":
+			sshloginmonitor.PrintLog(events, config.K.Bool("color"))
+		case "csv":
+			sshloginmonitor.PrintCSV(events)
+		case "json":
+			sshloginmonitor.PrintJSON(events)
+		}
+
 	}
 
-	sessions := sshloginmonitor.EventsToSessions(&events)
-
-	switch config.K.String("output") {
-	case "sum":
-		sshloginmonitor.PrintSummary(sessions, config.K.Bool("color"))
-	case "log":
-		sshloginmonitor.PrintLog(events, config.K.Bool("color"))
-	case "csv":
-		sshloginmonitor.PrintCSV(events)
-	case "json":
-		sshloginmonitor.PrintJSON(events)
-	}
 }

@@ -30,6 +30,7 @@ func LoadKonfig(configFile string) error {
 	f.StringP("output", "o", "sum", "Output format: sum, log, csv, json")
 	f.StringP("log", "l", "", "Log file to parse. If no log file is specified, it collects the fingerprints and exits.")
 	f.StringP("database", "d", "fingerprints.db", "Fingerprints database")
+	f.BoolP("follow", "f", false, "Watch log file for changes")
 	f.BoolP("color", "c", false, "Color output")
 	if err := f.Parse(os.Args[1:]); err != nil {
 		log.Fatal(err)
