@@ -55,6 +55,12 @@ func PrintSummary(sessions []Session, colorFlag bool) {
 // Returns:
 //   - None
 func PrintLog(events []SessionEvent, colorFlag bool) {
+	for _, event := range events {
+		PrintEvent(event, colorFlag)
+	}
+}
+
+func PrintEvent(event SessionEvent, colorFlag bool) {
 	if !colorFlag {
 		color.NoColor = true
 	}
@@ -62,12 +68,10 @@ func PrintLog(events []SessionEvent, colorFlag bool) {
 	eventtypeColor := color.New(colorMap[config.K.String("theme.eventtype")]).SprintFunc()
 	eventtimeColor := color.New(colorMap[config.K.String("theme.eventtime")]).SprintFunc()
 	sourceipColor := color.New(colorMap[config.K.String("theme.sourceip")]).SprintFunc()
-	for _, event := range events {
-		fmt.Printf("%s\t%s\t%s\t%s\n", usernameColor(event.Username),
-			eventtypeColor(event.EventType),
-			sourceipColor(event.SourceIP),
-			eventtimeColor(event.EventTime.Format("2006-01-02 15:04:05")))
-	}
+	fmt.Printf("%s\t%s\t%s\t%s\n", usernameColor(event.Username),
+		eventtypeColor(event.EventType),
+		sourceipColor(event.SourceIP),
+		eventtimeColor(event.EventTime.Format("2006-01-02 15:04:05")))
 }
 
 // PrintCSV prints the given list of SessionEvent objects with the CSV format.
