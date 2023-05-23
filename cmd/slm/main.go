@@ -6,6 +6,8 @@ import (
 	"os"
 	"os/signal"
 
+	"github.com/knadh/koanf/parsers/json"
+	"github.com/knadh/koanf/providers/rawbytes"
 	"github.com/pavelanni/ssh-login-monitor/pkg/config"
 	"github.com/pavelanni/ssh-login-monitor/pkg/sshloginmonitor"
 	bolt "go.etcd.io/bbolt"
@@ -13,17 +15,19 @@ import (
 
 func main() {
 
+	// Load configuration from config.yaml file
 	err := config.LoadKonfig("config/config.yaml")
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	// Open database file
 	db, err := bolt.Open(config.K.String("database"), 0600, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
 
+	// Create bucket if it doesn't exist
 	err = db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists([]byte(config.K.String("bucket")))
 		if err != nil {
@@ -35,7 +39,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Check if authkeys file is provided
 	if config.K.String("authkeys") != "" {
+		// Parse authkeys file and add users to the database
 		users := make([]sshloginmonitor.User, 0)
 
 		f, err := os.Open(config.K.String("authkeys"))
@@ -65,6 +71,31 @@ func main() {
 	}
 	defer logFile.Close()
 
+	events, err := sshloginmonitor.LogToEvents(logFile, db, config.K.String("bucket"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	sessions := sshloginmonitor.EventsToSessions(&events)
+
+	// Check if follow flag is set to true
+	if config.K.Bool("follow") {
+		// Update configuration to output log to console
+		b := []byte(`{"output": "log"}`)
+		config.K.Load(rawbytes.Provider(b), json.Parser())
+	}
+	// Switch output format based on configuration
+	switch config.K.String("output") {
+	case "sum":
+		sshloginmonitor.PrintSummary(sessions, config.K.Bool("color"))
+	case "log":
+		sshloginmonitor.PrintLog(events, config.K.Bool("color"))
+	case "csv":
+		sshloginmonitor.PrintCSV(events)
+	case "json":
+		sshloginmonitor.PrintJSON(events)
+	}
+
+	// Check if follow flag is set to true
 	if config.K.Bool("follow") {
 		// done is the channel to notify the WatchLog function to stop watching and exit
 		done := make(chan struct{})
@@ -75,25 +106,10 @@ func main() {
 			close(done)
 		}()
 
-		sshloginmonitor.WatchLog(logFile, db, config.K.String("bucket"), os.Stdout, done)
-	} else {
-		events, err := sshloginmonitor.LogToEvents(logFile, db, config.K.String("bucket"))
+		// Watch log file for changes
+		err = sshloginmonitor.WatchLog(logFile, db, config.K.String("bucket"), &sessions, done)
 		if err != nil {
 			log.Fatal(err)
 		}
-		sessions := sshloginmonitor.EventsToSessions(&events)
-
-		switch config.K.String("output") {
-		case "sum":
-			sshloginmonitor.PrintSummary(sessions, config.K.Bool("color"))
-		case "log":
-			sshloginmonitor.PrintLog(events, config.K.Bool("color"))
-		case "csv":
-			sshloginmonitor.PrintCSV(events)
-		case "json":
-			sshloginmonitor.PrintJSON(events)
-		}
-
 	}
-
 }

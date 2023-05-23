@@ -175,7 +175,9 @@ func EventsToSessions(events *[]SessionEvent) []Session {
 }
 
 // WatchLog watches the logFilele for login events and logs them to the output.
-func WatchLog(input *os.File, db *bolt.DB, bucket string, output io.Writer, done chan struct{}) error {
+func WatchLog(input *os.File, db *bolt.DB, bucket string, sessions *[]Session, done chan struct{}) error {
+	portToUser := make(map[string]string)
+
 	var offset int64
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -194,18 +196,25 @@ func WatchLog(input *os.File, db *bolt.DB, bucket string, output io.Writer, done
 			return nil
 		case event := <-watcher.Events:
 			if event.Op&fsnotify.Write == fsnotify.Write {
-				input.Seek(offset, io.SeekStart)
+				_, err := input.Seek(offset, io.SeekStart)
+				if err != nil {
+					return err
+				}
 				scanner := bufio.NewScanner(input)
 
 				for scanner.Scan() {
 					line := scanner.Text()
-					event, err := getLogEvent(line, db, bucket)
+					logEvent, err := getLogEvent(line, db, bucket)
 					if err != nil {
 						return err
 					}
 
-					if (event != SessionEvent{}) {
-						PrintEvent(event, config.K.Bool("color"))
+					if (logEvent != SessionEvent{}) {
+						logEvent, err = processEvent(logEvent, sessions, portToUser)
+						if err != nil {
+							log.Println(err)
+						}
+						PrintEvent(logEvent, config.K.Bool("color"))
 						offset, _ = input.Seek(0, io.SeekCurrent)
 					}
 				}
@@ -285,6 +294,41 @@ func getLogEvent(line string, db *bolt.DB, bucket string) (SessionEvent, error) 
 			Username:  "root",
 			SourceIP:  result["loginIP"],
 			Port:      result["port"],
+		}
+	}
+	return event, nil
+}
+
+// processEvent updated []sessions and returns the updated event
+// where user is replaced with the actual user based on the sessions database
+func processEvent(event SessionEvent, sessions *[]Session, portToUser map[string]string) (SessionEvent, error) {
+	if event.EventType == "login" {
+		portToUser[event.Port] = event.Username
+		session := Session{
+			Username:  event.Username,
+			Port:      event.Port,
+			SourceIP:  event.SourceIP,
+			StartTime: event.EventTime,
+		}
+		*sessions = append(*sessions, session)
+		return event, nil
+	} else if event.EventType == "logout" {
+		port := event.Port
+		if user, ok := portToUser[port]; ok {
+			// update the user in the logout event
+			event.Username = user
+			// find the session with the same port in sessions
+			for i, session := range *sessions {
+				if session.Username == user && session.SourceIP == event.SourceIP && session.Port == port {
+					session.EndTime = event.EventTime
+					(*sessions)[i] = session
+					delete(portToUser, port)
+				}
+			}
+			return event, nil
+		} else {
+			err := fmt.Errorf("login event for port %s not found\n", port)
+			return event, err
 		}
 	}
 	return event, nil
