@@ -34,10 +34,10 @@ func PrintSummary(sessions []Session, colorFlag bool) {
 	if !colorFlag {
 		color.NoColor = true
 	}
-	usernameColor := color.New(colorMap[config.K.String("theme.username")]).SprintFunc()
-	sourceipColor := color.New(colorMap[config.K.String("theme.sourceip")]).SprintFunc()
-	starttimeColor := color.New(colorMap[config.K.String("theme.starttime")]).SprintFunc()
-	endtimeColor := color.New(colorMap[config.K.String("theme.endtime")]).SprintFunc()
+	usernameColor := color.New(colorMap[config.K.String("theme.username")]).SprintfFunc()
+	sourceipColor := color.New(colorMap[config.K.String("theme.sourceip")]).SprintfFunc()
+	starttimeColor := color.New(colorMap[config.K.String("theme.starttime")]).SprintfFunc()
+	endtimeColor := color.New(colorMap[config.K.String("theme.endtime")]).SprintfFunc()
 	for _, session := range sessions {
 		fmt.Printf("%s\t%s\t%s\t%s\t%s\n", usernameColor(session.Username),
 			sourceipColor(session.SourceIP),
@@ -64,14 +64,14 @@ func PrintEvent(event SessionEvent, colorFlag bool) {
 	if !colorFlag {
 		color.NoColor = true
 	}
-	usernameColor := color.New(colorMap[config.K.String("theme.username")]).SprintFunc()
-	eventtypeColor := color.New(colorMap[config.K.String("theme.eventtype")]).SprintFunc()
-	eventtimeColor := color.New(colorMap[config.K.String("theme.eventtime")]).SprintFunc()
-	sourceipColor := color.New(colorMap[config.K.String("theme.sourceip")]).SprintFunc()
-	fmt.Printf("%s\t%s\t%s\t%s\n", usernameColor(event.Username),
-		eventtypeColor(event.EventType),
-		sourceipColor(event.SourceIP),
-		eventtimeColor(event.EventTime.Format("2006-01-02 15:04:05")))
+	usernameColor := color.New(colorMap[config.K.String("theme.username")]).SprintfFunc()
+	eventtypeColor := color.New(colorMap[config.K.String("theme.eventtype")]).SprintfFunc()
+	eventtimeColor := color.New(colorMap[config.K.String("theme.eventtime")]).SprintfFunc()
+	sourceipColor := color.New(colorMap[config.K.String("theme.sourceip")]).SprintfFunc()
+	fmt.Println(usernameColor("%-30s", event.Username),
+		eventtypeColor("%-16s", event.EventType),
+		sourceipColor("%-24s", event.SourceIP),
+		eventtimeColor("%-24s", event.EventTime.Format("2006-01-02 15:04:05")))
 }
 
 // PrintCSV prints the given list of SessionEvent objects with the CSV format.
