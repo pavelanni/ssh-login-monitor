@@ -68,10 +68,10 @@ func PrintEvent(event SessionEvent, colorFlag bool) {
 	eventtypeColor := color.New(colorMap[config.K.String("theme.eventtype")]).SprintfFunc()
 	eventtimeColor := color.New(colorMap[config.K.String("theme.eventtime")]).SprintfFunc()
 	sourceipColor := color.New(colorMap[config.K.String("theme.sourceip")]).SprintfFunc()
-	fmt.Println(usernameColor("%-30s", event.Username),
-		eventtypeColor("%-16s", event.EventType),
-		sourceipColor("%-24s", event.SourceIP),
-		eventtimeColor("%-24s", event.EventTime.Format("2006-01-02 15:04:05")))
+	fmt.Println(usernameColor("%-24s", event.Username),
+		eventtypeColor("%-8s", event.EventType),
+		sourceipColor("%-16s", event.SourceIP),
+		eventtimeColor("%-20s", event.EventTime.Format("2006-01-02 15:04:05")))
 }
 
 // PrintCSV prints the given list of SessionEvent objects with the CSV format.

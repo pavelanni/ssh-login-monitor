@@ -120,7 +120,7 @@ func LogToEvents(reader io.Reader, db *bolt.DB, bucket string) ([]SessionEvent, 
 			event := SessionEvent{
 				EventType: "logout",
 				EventTime: eventTime,
-				Username:  "root",
+				Username:  "????",
 				SourceIP:  result["loginIP"],
 				Port:      result["port"],
 			}
@@ -291,7 +291,7 @@ func getLogEvent(line string, db *bolt.DB, bucket string) (SessionEvent, error) 
 		event = SessionEvent{
 			EventType: "logout",
 			EventTime: eventTime,
-			Username:  "root",
+			Username:  "????",
 			SourceIP:  result["loginIP"],
 			Port:      result["port"],
 		}
