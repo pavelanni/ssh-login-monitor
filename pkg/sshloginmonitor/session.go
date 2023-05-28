@@ -66,24 +66,27 @@ func LogToEvents(reader io.Reader, db *bolt.DB, bucket string) ([]SessionEvent, 
 	return events, nil
 }
 
-func JournalToEvents(db *bolt.DB, bucket string) ([]SessionEvent, error) {
+func JournalToEvents(db *bolt.DB, bucket string) error {
 	events := make([]SessionEvent, 0)
+	sessions := &[]Session{}
+	portToUser := make(map[string]string)
+
 	j, err := sdjournal.NewJournal()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer j.Close()
 
 	// Match by SYSLOG_IDENTIFIER
 	err = j.AddMatch("SYSLOG_IDENTIFIER=sshd")
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// Start at the beginning of the journal
 	err = j.SeekHead()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	j.Wait(sdjournal.IndefiniteWait)
 
@@ -100,7 +103,7 @@ func JournalToEvents(db *bolt.DB, bucket string) ([]SessionEvent, error) {
 		}
 		entry, err := j.GetEntry()
 		if err != nil {
-			return nil, err
+			return err
 		}
 		if _, ok := entry.Fields["MESSAGE"]; ok {
 			line := fmt.Sprintf("%s %s %s[%s]: %s", // reproduce format of journalctl output
@@ -112,16 +115,20 @@ func JournalToEvents(db *bolt.DB, bucket string) ([]SessionEvent, error) {
 			)
 			event, err := getLogEvent(line, db, bucket)
 			if err != nil {
-				return nil, err
+				return err
 			}
 			if event == (SessionEvent{}) {
 				continue
+			}
+			event, err = processEvent(event, sessions, portToUser)
+			if err != nil {
+				return err
 			}
 			events = append(events, event)
 			PrintEvent(event, config.K.Bool("color"))
 		}
 	}
-	return events, nil
+	return nil
 
 }
 

@@ -65,9 +65,10 @@ func main() {
 	}
 
 	var events []sshloginmonitor.SessionEvent
+	var sessions []sshloginmonitor.Session
 
 	if config.K.String("log") == "journal" {
-		events, err = sshloginmonitor.JournalToEvents(db, config.K.String("bucket"))
+		err := sshloginmonitor.JournalToEvents(db, config.K.String("bucket"))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -84,13 +85,16 @@ func main() {
 		}
 
 	}
-	sessions := sshloginmonitor.EventsToSessions(&events)
+	sessions = sshloginmonitor.EventsToSessions(&events)
 
 	// Check if follow flag is set to true
 	if config.K.Bool("follow") {
 		// Update configuration to output log to console
 		b := []byte(`{"output": "log"}`)
-		config.K.Load(rawbytes.Provider(b), json.Parser())
+		err := config.K.Load(rawbytes.Provider(b), json.Parser())
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	// Switch output format based on configuration
 	switch config.K.String("output") {
