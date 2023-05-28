@@ -65,7 +65,6 @@ func main() {
 	}
 
 	var events []sshloginmonitor.SessionEvent
-	var logFile *os.File
 
 	if config.K.String("log") == "journal" {
 		events, err = sshloginmonitor.JournalToEvents(db, config.K.String("bucket"))
@@ -107,19 +106,22 @@ func main() {
 
 	// Check if follow flag is set to true
 	if config.K.Bool("follow") {
-		// done is the channel to notify the WatchLog function to stop watching and exit
-		done := make(chan struct{})
-		go func() {
-			sigint := make(chan os.Signal, 1)
-			signal.Notify(sigint, os.Interrupt)
-			<-sigint
-			close(done)
-		}()
+		if config.K.String("log") != "journal" {
+			// done is the channel to notify the WatchLog function to stop watching and exit
+			done := make(chan struct{})
+			go func() {
+				sigint := make(chan os.Signal, 1)
+				signal.Notify(sigint, os.Interrupt)
+				<-sigint
+				close(done)
+			}()
 
-		if config.K.String("log") == "journal" {
-			fmt.Println("Use the --follow flag only with files, not with journal.")
-		} else {
 			// Watch log file for changes
+			logFile, err := os.Open(config.K.String("log"))
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer logFile.Close()
 			err = sshloginmonitor.WatchLog(logFile, db, config.K.String("bucket"), &sessions, done)
 			if err != nil {
 				log.Fatal(err)

@@ -204,61 +204,21 @@ func WatchLog(input *os.File, db *bolt.DB, bucket string, sessions *[]Session, d
 						return err
 					}
 
-					if (logEvent != SessionEvent{}) {
-						logEvent, err = processEvent(logEvent, sessions, portToUser)
-						if err != nil {
-							log.Println(err)
-						}
-						PrintEvent(logEvent, config.K.Bool("color"))
-						offset, _ = input.Seek(0, io.SeekCurrent)
+					if (logEvent == SessionEvent{}) {
+						continue
 					}
+					logEvent, err = processEvent(logEvent, sessions, portToUser)
+					if err != nil {
+						log.Println(err)
+					}
+					PrintEvent(logEvent, config.K.Bool("color"))
+					offset, _ = input.Seek(0, io.SeekCurrent)
 				}
 			}
 		case err := <-watcher.Errors:
 			return err
 		}
 	}
-}
-
-func WatchJournal(db *bolt.DB, bucket string, sessions *[]Session, done chan struct{}) error {
-	j, err := sdjournal.NewJournal()
-	if err != nil {
-		return err
-	}
-	defer j.Close()
-
-	// Match by SYSLOG_IDENTIFIER
-	err = j.AddMatch("SYSLOG_IDENTIFIER=sshd")
-	if err != nil {
-		return err
-	}
-	err = j.SeekTail()
-	if err != nil {
-		return err
-	}
-	j.Wait(sdjournal.IndefiniteWait)
-
-	for {
-		_, err := j.Next()
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			return err
-		}
-		entry, err := j.GetEntry()
-		if err != nil {
-			return err
-		}
-		if line, ok := entry.Fields["MESSAGE"]; ok {
-			event, err := getLogEvent(string(line), db, bucket)
-			if err != nil {
-				return err
-			}
-			PrintEvent(event, config.K.Bool("color"))
-		}
-	}
-	return nil
 }
 
 func getLogEvent(line string, db *bolt.DB, bucket string) (SessionEvent, error) {
