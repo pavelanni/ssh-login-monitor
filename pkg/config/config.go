@@ -9,11 +9,28 @@ import (
 	"github.com/knadh/koanf/parsers/yaml"
 	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/providers/posflag"
+	"github.com/knadh/koanf/providers/rawbytes"
 	"github.com/knadh/koanf/v2"
 	flag "github.com/spf13/pflag"
 )
 
 var K *koanf.Koanf
+
+const defaultConfig = `
+authkeys: ""
+bucket: "LoginMonitor"
+output: "sum"
+log: "test/secure.log"
+database: "test/database.db"
+color: false
+theme:
+  username: green
+  eventtype: yellow
+  eventtime: red
+  sourceip: blue
+  starttime: green
+  endtime: red
+  port: blue`
 
 func LoadKonfig() error {
 	var err error
@@ -32,6 +49,11 @@ func LoadKonfig() error {
 	f.BoolP("follow", "f", false, "Watch log file for changes")
 	f.Bool("color", false, "Color output")
 	if err := f.Parse(os.Args[1:]); err != nil {
+		return err
+	}
+
+	err = K.Load(rawbytes.Provider([]byte(defaultConfig)), yaml.Parser())
+	if err != nil {
 		return err
 	}
 
