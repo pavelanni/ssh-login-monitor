@@ -15,8 +15,7 @@ import (
 
 func main() {
 
-	// Load configuration from config.yaml file
-	err := config.LoadKonfig("config/config.yaml")
+	err := config.LoadKonfig()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -65,15 +64,26 @@ func main() {
 		os.Exit(1)
 	}
 
-	logFile, err := os.Open(config.K.String("log"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer logFile.Close()
+	var events []sshloginmonitor.SessionEvent
+	var logFile *os.File
 
-	events, err := sshloginmonitor.LogToEvents(logFile, db, config.K.String("bucket"))
-	if err != nil {
-		log.Fatal(err)
+	if config.K.String("log") == "journal" {
+		events, err = sshloginmonitor.JournalToEvents(db, config.K.String("bucket"))
+		if err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		logFile, err := os.Open(config.K.String("log"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer logFile.Close()
+
+		events, err = sshloginmonitor.LogToEvents(logFile, db, config.K.String("bucket"))
+		if err != nil {
+			log.Fatal(err)
+		}
+
 	}
 	sessions := sshloginmonitor.EventsToSessions(&events)
 
@@ -106,10 +116,15 @@ func main() {
 			close(done)
 		}()
 
-		// Watch log file for changes
-		err = sshloginmonitor.WatchLog(logFile, db, config.K.String("bucket"), &sessions, done)
-		if err != nil {
-			log.Fatal(err)
+		if config.K.String("log") == "journal" {
+			fmt.Println("Use the --follow flag only with files, not with journal.")
+		} else {
+			// Watch log file for changes
+			err = sshloginmonitor.WatchLog(logFile, db, config.K.String("bucket"), &sessions, done)
+			if err != nil {
+				log.Fatal(err)
+			}
+
 		}
 	}
 }

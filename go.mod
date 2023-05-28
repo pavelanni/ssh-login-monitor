@@ -3,6 +3,7 @@ module github.com/pavelanni/ssh-login-monitor
 go 1.20
 
 require (
+	github.com/coreos/go-systemd v0.0.0-20191104093116-d3cd4ed1dbcf
 	github.com/fatih/color v1.15.0
 	github.com/fsnotify/fsnotify v1.6.0
 	github.com/knadh/koanf/parsers/json v0.1.0
