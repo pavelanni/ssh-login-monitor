@@ -12,6 +12,7 @@ import (
 	"github.com/coreos/go-systemd/sdjournal"
 	"github.com/fsnotify/fsnotify"
 	"github.com/pavelanni/ssh-login-monitor/pkg/config"
+	"github.com/rs/zerolog"
 	bolt "go.etcd.io/bbolt"
 )
 
@@ -67,9 +68,11 @@ func LogToEvents(reader io.Reader, db *bolt.DB, bucket string) ([]SessionEvent, 
 }
 
 func JournalToEvents(db *bolt.DB, bucket string) error {
-	events := make([]SessionEvent, 0)
 	sessions := &[]Session{}
 	portToUser := make(map[string]string)
+
+	//logger := zerolog.New(os.Stderr).With().Logger()
+	consoleLogger := zerolog.New(zerolog.ConsoleWriter{Out: os.Stdout, NoColor: false})
 
 	j, err := sdjournal.NewJournal()
 	if err != nil {
@@ -88,7 +91,6 @@ func JournalToEvents(db *bolt.DB, bucket string) error {
 	if err != nil {
 		return err
 	}
-	j.Wait(sdjournal.IndefiniteWait)
 
 	for {
 		n, err := j.Next()
@@ -97,9 +99,13 @@ func JournalToEvents(db *bolt.DB, bucket string) error {
 			break
 		}
 		if n == 0 {
-			// No new entries, wait for new ones
-			j.Wait(sdjournal.IndefiniteWait)
-			continue
+			// No new entries, wait for new ones if "follow" is set
+			if config.K.Bool("follow") {
+				j.Wait(sdjournal.IndefiniteWait)
+				continue
+			} else {
+				break
+			}
 		}
 		entry, err := j.GetEntry()
 		if err != nil {
@@ -124,8 +130,14 @@ func JournalToEvents(db *bolt.DB, bucket string) error {
 			if err != nil {
 				return err
 			}
-			events = append(events, event)
-			PrintEvent(event, config.K.Bool("color"))
+			consoleLogger.Info().
+				Str("event time", event.EventTime.String()).
+				Str("event type", event.EventType).
+				Str("username", event.Username).
+				Str("source ip", event.SourceIP).
+				Str("port", event.Port).
+				Msg("ssh event")
+			// PrintEvent(event, config.K.Bool("color"))
 		}
 	}
 	return nil

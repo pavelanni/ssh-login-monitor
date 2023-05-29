@@ -20,8 +20,8 @@ const defaultConfig = `
 authkeys: ""
 bucket: "LoginMonitor"
 output: "sum"
-log: "test/secure.log"
-database: "test/database.db"
+log: "secure.log"
+database: "database.db"
 color: false
 theme:
   username: green
@@ -40,7 +40,7 @@ func LoadKonfig() error {
 	}
 
 	f := flag.NewFlagSet("config", flag.ContinueOnError)
-	configFile := f.StringP("config", "c", "$HOME/.config/slm/config.yaml", "Configuration file")
+	configFile := f.StringP("config", "c", "config.yaml", "Configuration file")
 	f.StringP("authkeys", "a", "", "authorized_keys file containing public keys")
 	f.StringP("bucket", "b", "LoginMonitor", "Database bucket name")
 	f.StringP("output", "o", "sum", "Output format: sum, log, csv, json")

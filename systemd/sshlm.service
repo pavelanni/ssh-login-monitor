@@ -1,0 +1,17 @@
+[Unit]
+Description=SSH login monitor
+
+[Service]
+ExecStart=/usr/local/bin/sshlm -l journal -o log
+Restart=always
+User=root
+Group=root
+Environment=PATH=/usr/bin:/usr/local/bin
+Environment=MY_ENV_VAR=whatever
+WorkingDirectory=/var/local/lib/sshlm
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sshlm
+
+[Install]
+WantedBy=multi-user.target

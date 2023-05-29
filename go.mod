@@ -12,6 +12,7 @@ require (
 	github.com/knadh/koanf/providers/posflag v0.1.0
 	github.com/knadh/koanf/providers/rawbytes v0.1.0
 	github.com/knadh/koanf/v2 v2.0.1
+	github.com/rs/zerolog v1.29.1
 	github.com/spf13/pflag v1.0.5
 	go.etcd.io/bbolt v1.3.7
 	golang.org/x/crypto v0.8.0
