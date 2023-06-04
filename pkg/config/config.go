@@ -17,11 +17,12 @@ import (
 var K *koanf.Koanf
 
 const defaultConfig = `
-authkeys: ""
+authkeys: "/root/.ssh/authorized_keys"
 bucket: "LoginMonitor"
-output: "sum"
-log: "secure.log"
-database: "database.db"
+output: "log"
+log: "journal"
+database: "fingerprints.db"
+updatekeys: true
 color: false
 theme:
   username: green
@@ -46,6 +47,7 @@ func LoadKonfig() error {
 	f.StringP("output", "o", "sum", "Output format: sum, log, csv, json")
 	f.StringP("log", "l", "/var/log/secure", "Log file to parse. If no log file is specified, it collects the fingerprints and exits.")
 	f.StringP("database", "d", "fingerprints.db", "Fingerprints database")
+	f.BoolP("updatekeys", "u", true, "Update keys in database")
 	f.BoolP("follow", "f", false, "Watch log file for changes")
 	f.Bool("color", false, "Color output")
 	if err := f.Parse(os.Args[1:]); err != nil {

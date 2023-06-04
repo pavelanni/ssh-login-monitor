@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/pavelanni/ssh-login-monitor/pkg/config"
 	bolt "go.etcd.io/bbolt"
 	"golang.org/x/crypto/ssh"
 )
@@ -91,7 +92,6 @@ func addUsersToDB(users []User, db *bolt.DB, bucket string) error {
 	if len(users) == 0 {
 		return errors.New("empty users slice")
 	}
-	reader := bufio.NewReader(os.Stdin)
 
 	for _, user := range users {
 		err := db.Update(func(tx *bolt.Tx) error {
@@ -100,20 +100,9 @@ func addUsersToDB(users []User, db *bolt.DB, bucket string) error {
 				return fmt.Errorf("bucket %s not found", bucket)
 			}
 			u := b.Get([]byte(user.Fingerprint))
-			if u != nil {
-				if string(u) != user.Username {
-					fmt.Printf("Fingerprint exists in the DB for name: %s\n", u)
-					fmt.Printf("New name is: %s. Update? [Y/n]: ", user.Username)
-					char, _, err := reader.ReadRune()
-					if err != nil {
-						return err
-					}
-					switch char {
-					case 'y', 'Y':
-						return b.Put([]byte(user.Fingerprint), []byte(user.Username))
-					default:
-						break
-					}
+			if u != nil { // If the fingerprint is already in the database
+				if !config.K.Bool("updatekeys") { // skip if --updatekeys is set to false
+					return nil
 				}
 			}
 			return b.Put([]byte(user.Fingerprint), []byte(user.Username))
