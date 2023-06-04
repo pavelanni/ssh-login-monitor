@@ -18,14 +18,37 @@ type User struct {
 	Fingerprint string
 }
 
-// GetAuthKeys reads an ssh authorized keys file and populates a slice of User structs with the usernames and fingerprints.
+func UpdateKeysDB(keysFile string, db *bolt.DB, bucket string, follow bool) error {
+	f, err := os.Open(keysFile)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			log.Println("authkeys file not found; database wasn't updated")
+			return nil
+		}
+		return err
+	}
+	defer f.Close()
+
+	users := make([]User, 0)
+	err = getAuthKeys(f, &users)
+	if err != nil {
+		return err
+	}
+	err = addUsersToDB(users, db, bucket)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// getAuthKeys reads an ssh authorized keys file and populates a slice of User structs with the usernames and fingerprints.
 // Parameters:
 //   - reader: an io.Reader containing the ssh authorized keys file
 //   - users: a pointer to a slice of User structs to be populated
 //
 // Returns:
 //   - error: an error if there was an issue reading the file or parsing the keys
-func GetAuthKeys(reader io.Reader, users *[]User) error {
+func getAuthKeys(reader io.Reader, users *[]User) error {
 	scanner := bufio.NewScanner(reader)
 	scanner.Split(bufio.ScanLines)
 
@@ -56,7 +79,7 @@ func GetAuthKeys(reader io.Reader, users *[]User) error {
 	return nil
 }
 
-// AddUsersToDB adds a slice of User structs to the database.
+// addUsersToDB adds a slice of User structs to the database.
 // Parameters:
 //   - users: a slice of User structs to be added to the database
 //   - db: a database connection
@@ -64,7 +87,7 @@ func GetAuthKeys(reader io.Reader, users *[]User) error {
 //
 // Returns:
 //   - error: an error if there was an issue adding the users
-func AddUsersToDB(users []User, db *bolt.DB, bucket string) error {
+func addUsersToDB(users []User, db *bolt.DB, bucket string) error {
 	if len(users) == 0 {
 		return errors.New("empty users slice")
 	}
@@ -73,19 +96,24 @@ func AddUsersToDB(users []User, db *bolt.DB, bucket string) error {
 	for _, user := range users {
 		err := db.Update(func(tx *bolt.Tx) error {
 			b := tx.Bucket([]byte(bucket))
+			if b == nil {
+				return fmt.Errorf("bucket %s not found", bucket)
+			}
 			u := b.Get([]byte(user.Fingerprint))
 			if u != nil {
-				fmt.Printf("Fingerprint exists in the DB for name: %s\n", u)
-				fmt.Printf("New name is: %s. Update? [Y/n]: ", user.Username)
-				char, _, err := reader.ReadRune()
-				if err != nil {
-					return err
-				}
-				switch char {
-				case 'y', 'Y':
-					return b.Put([]byte(user.Fingerprint), []byte(user.Username))
-				default:
-					break
+				if string(u) != user.Username {
+					fmt.Printf("Fingerprint exists in the DB for name: %s\n", u)
+					fmt.Printf("New name is: %s. Update? [Y/n]: ", user.Username)
+					char, _, err := reader.ReadRune()
+					if err != nil {
+						return err
+					}
+					switch char {
+					case 'y', 'Y':
+						return b.Put([]byte(user.Fingerprint), []byte(user.Username))
+					default:
+						break
+					}
 				}
 			}
 			return b.Put([]byte(user.Fingerprint), []byte(user.Username))
@@ -94,7 +122,6 @@ func AddUsersToDB(users []User, db *bolt.DB, bucket string) error {
 			return err
 		}
 	}
-
 	return nil
 }
 

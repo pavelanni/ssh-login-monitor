@@ -41,19 +41,11 @@ func main() {
 	// Check if authkeys file is provided
 	if config.K.String("authkeys") != "" {
 		// Parse authkeys file and add users to the database
-		users := make([]sshloginmonitor.User, 0)
 
-		f, err := os.Open(config.K.String("authkeys"))
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer f.Close()
-
-		err = sshloginmonitor.GetAuthKeys(f, &users)
-		if err != nil {
-			log.Fatal(err)
-		}
-		err = sshloginmonitor.AddUsersToDB(users, db, config.K.String("bucket"))
+		err := sshloginmonitor.UpdateKeysDB(config.K.String("authkeys"),
+			db,
+			config.K.String("bucket"),
+			config.K.Bool("follow"))
 		if err != nil {
 			log.Fatal(err)
 		}

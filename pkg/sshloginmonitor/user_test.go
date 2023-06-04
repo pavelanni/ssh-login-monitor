@@ -45,7 +45,7 @@ ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJWcjljox2NKwDFllZ5KQc4LSVrBEKoaOE/t/up1XbyD
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := GetAuthKeys(tt.args.reader, tt.args.users)
+			err := getAuthKeys(tt.args.reader, tt.args.users)
 			if err != nil {
 				if err.Error() != tt.wantErr.Error() {
 					t.Errorf("GetAuthKeys() error = %v, wantErr %v", err, tt.wantErr)

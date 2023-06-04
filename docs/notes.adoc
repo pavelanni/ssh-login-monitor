@@ -4,7 +4,7 @@ Development notes
 2023-05-29::
 My first implementation was reading from the `/var/log/secure` file which keeps ssh login and logout events in Red Hat 8.
 Then I added ability to read from the `systemd` journal similar to `journalctl`.
-After looking at Fedora and RHEL 9 implementations it is obvious that reading from journal should be the main option.
+After looking at Fedora and RHEL 9 implementations it is obvious that reading from the journal should be the main option.
 Neither Fedora nor RHEL 9 use `/var/log/secure` to log ssh events.
 +
 This is a good read about The Journal: https://docs.google.com/document/u/0/d/1IC9yOXj7j6cdLLxWEBAGRL6wl97tFxgjLUEHIX3MSTs/pub
