@@ -2,6 +2,7 @@ package sshloginmonitor
 
 import (
 	"bufio"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -9,6 +10,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/pavelanni/ssh-login-monitor/pkg/config"
 	bolt "go.etcd.io/bbolt"
 	"golang.org/x/crypto/ssh"
@@ -19,7 +21,7 @@ type User struct {
 	Fingerprint string
 }
 
-func UpdateKeysDB(keysFile string, db *bolt.DB, bucket string, follow bool) error {
+func UpdateKeysDB(ctx context.Context, keysFile string, db *bolt.DB, bucket string, follow bool) error {
 	f, err := os.Open(keysFile)
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -39,7 +41,60 @@ func UpdateKeysDB(keysFile string, db *bolt.DB, bucket string, follow bool) erro
 	if err != nil {
 		return err
 	}
-	return nil
+	if !follow {
+		return nil
+	}
+	// if follow is true, watch the authkeys file for changes and update the database
+	var offset int64
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		return err
+	}
+	defer watcher.Close()
+	err = watcher.Add(keysFile)
+	if err != nil {
+		return err
+	}
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case ev := <-watcher.Events:
+			if ev.Op&fsnotify.Write == fsnotify.Write {
+				_, err := f.Seek(offset, io.SeekStart)
+				if err != nil {
+					return err
+				}
+				scanner := bufio.NewScanner(f)
+				for scanner.Scan() {
+					// Parse the authorized key and extract the comment and fingerprint
+					out, comment, _, _, err := ssh.ParseAuthorizedKey([]byte(scanner.Text()))
+					if err != nil {
+						return err
+					}
+
+					// If the comment is empty, log a warning and skip this key
+					if comment == "" {
+						log.Printf("empty comment, remove this fingerprint: %s", out)
+						continue
+					}
+
+					// Calculate the fingerprint and create a new User struct
+					fingerprint := strings.Split(ssh.FingerprintSHA256(out), ":")[1]
+					user := User{
+						Username:    comment,
+						Fingerprint: fingerprint,
+					}
+					err = addOneUserToDB(user, db, bucket)
+					if err != nil {
+						return err
+					}
+				}
+			}
+		case err := <-watcher.Errors:
+			return err
+		}
+	}
 }
 
 // getAuthKeys reads an ssh authorized keys file and populates a slice of User structs with the usernames and fingerprints.
@@ -94,22 +149,31 @@ func addUsersToDB(users []User, db *bolt.DB, bucket string) error {
 	}
 
 	for _, user := range users {
-		err := db.Update(func(tx *bolt.Tx) error {
-			b := tx.Bucket([]byte(bucket))
-			if b == nil {
-				return fmt.Errorf("bucket %s not found", bucket)
-			}
-			u := b.Get([]byte(user.Fingerprint))
-			if u != nil { // If the fingerprint is already in the database
-				if !config.K.Bool("updatekeys") { // skip if --updatekeys is set to false
-					return nil
-				}
-			}
-			return b.Put([]byte(user.Fingerprint), []byte(user.Username))
-		})
+		err := addOneUserToDB(user, db, bucket)
 		if err != nil {
 			return err
 		}
+	}
+	return nil
+}
+
+func addOneUserToDB(user User, db *bolt.DB, bucket string) error {
+	err := db.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte(bucket))
+		if b == nil {
+			return fmt.Errorf("bucket %s not found", bucket)
+		}
+		u := b.Get([]byte(user.Fingerprint))
+		if u != nil { // If the fingerprint is already in the database
+			if !config.K.Bool("updatekeys") { // skip if --updatekeys is set to false
+				return nil
+			}
+		}
+		log.Printf("adding fingerprint for user %s", user.Username)
+		return b.Put([]byte(user.Fingerprint), []byte(user.Username))
+	})
+	if err != nil {
+		return err
 	}
 	return nil
 }

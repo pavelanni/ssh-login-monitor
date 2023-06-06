@@ -18,6 +18,7 @@ var K *koanf.Koanf
 
 const defaultConfig = `
 authkeys: "/root/.ssh/authorized_keys"
+followauthkeys: false
 bucket: "LoginMonitor"
 output: "log"
 log: "journal"
@@ -43,6 +44,7 @@ func LoadKonfig() error {
 	f := flag.NewFlagSet("config", flag.ContinueOnError)
 	configFile := f.StringP("config", "c", "config.yaml", "Configuration file")
 	f.StringP("authkeys", "a", "", "authorized_keys file containing public keys")
+	f.BoolP("followauthkeys", "k", false, "Follow authorized_keys file")
 	f.StringP("bucket", "b", "LoginMonitor", "Database bucket name")
 	f.StringP("output", "o", "sum", "Output format: sum, log, csv, json")
 	f.StringP("log", "l", "/var/log/secure", "Log file to parse. If no log file is specified, it collects the fingerprints and exits.")

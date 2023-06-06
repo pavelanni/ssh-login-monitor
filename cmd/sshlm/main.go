@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"os/signal"
+	"syscall"
 
 	"github.com/knadh/koanf/parsers/json"
 	"github.com/knadh/koanf/providers/rawbytes"
@@ -38,16 +40,33 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Create a context
+	ctx, cancel := context.WithCancel(context.Background())
+	// Create a channel to receive signals
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT)
+
+	go func() {
+		<-sigs
+		cancel()
+		log.Println("interrupt received, exiting...")
+		os.Exit(0)
+	}()
+
 	// Check if authkeys file is provided
 	if config.K.String("authkeys") != "" {
-		// Parse authkeys file and add users to the database
-
-		err := sshloginmonitor.UpdateKeysDB(config.K.String("authkeys"),
-			db,
-			config.K.String("bucket"),
-			config.K.Bool("follow"))
-		if err != nil {
-			log.Fatal(err)
+		if config.K.Bool("followauthkeys") {
+			go func() {
+				err = sshloginmonitor.UpdateKeysDB(ctx, config.K.String("authkeys"), db, config.K.String("bucket"), true)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}()
+		} else {
+			err = sshloginmonitor.UpdateKeysDB(ctx, config.K.String("authkeys"), db, config.K.String("bucket"), false)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 
@@ -60,7 +79,7 @@ func main() {
 	var sessions []sshloginmonitor.Session
 
 	if config.K.String("log") == "journal" {
-		err := sshloginmonitor.JournalToEvents(db, config.K.String("bucket"))
+		err := sshloginmonitor.JournalToEvents(ctx, db, config.K.String("bucket"))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -103,22 +122,13 @@ func main() {
 	// Check if follow flag is set to true
 	if config.K.Bool("follow") {
 		if config.K.String("log") != "journal" {
-			// done is the channel to notify the WatchLog function to stop watching and exit
-			done := make(chan struct{})
-			go func() {
-				sigint := make(chan os.Signal, 1)
-				signal.Notify(sigint, os.Interrupt)
-				<-sigint
-				close(done)
-			}()
-
 			// Watch log file for changes
 			logFile, err := os.Open(config.K.String("log"))
 			if err != nil {
 				log.Fatal(err)
 			}
 			defer logFile.Close()
-			err = sshloginmonitor.WatchLog(logFile, db, config.K.String("bucket"), &sessions, done)
+			err = sshloginmonitor.WatchLog(ctx, logFile, db, config.K.String("bucket"), &sessions)
 			if err != nil {
 				log.Fatal(err)
 			}

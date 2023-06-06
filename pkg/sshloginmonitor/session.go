@@ -2,6 +2,7 @@ package sshloginmonitor
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -67,7 +68,7 @@ func LogToEvents(reader io.Reader, db *bolt.DB, bucket string) ([]SessionEvent, 
 	return events, nil
 }
 
-func JournalToEvents(db *bolt.DB, bucket string) error {
+func JournalToEvents(ctx context.Context, db *bolt.DB, bucket string) error {
 	sessions := &[]Session{}
 	portToUser := make(map[string]string)
 
@@ -93,55 +94,58 @@ func JournalToEvents(db *bolt.DB, bucket string) error {
 	}
 
 	for {
-		n, err := j.Next()
-		if err != nil {
-			log.Println(err)
-			break
-		}
-		if n == 0 {
-			// No new entries, wait for new ones if "follow" is set
-			if config.K.Bool("follow") {
-				j.Wait(sdjournal.IndefiniteWait)
-				continue
-			} else {
+		select {
+		case <-ctx.Done():
+			return nil
+		default:
+			n, err := j.Next()
+			if err != nil {
+				log.Println(err)
 				break
 			}
-		}
-		entry, err := j.GetEntry()
-		if err != nil {
-			return err
-		}
-		if _, ok := entry.Fields["MESSAGE"]; ok {
-			line := fmt.Sprintf("%s %s %s[%s]: %s", // reproduce format of journalctl output
-				entry.Fields["SYSLOG_TIMESTAMP"],
-				entry.Fields["_HOSTNAME"],
-				entry.Fields["SYSLOG_IDENTIFIER"],
-				entry.Fields["_PID"],
-				entry.Fields["MESSAGE"],
-			)
-			event, err := getLogEvent(line, db, bucket)
+			if n == 0 {
+				// No new entries, wait for new ones if "follow" is set
+				if config.K.Bool("follow") {
+					j.Wait(sdjournal.IndefiniteWait)
+					continue
+				} else {
+					break
+				}
+			}
+			entry, err := j.GetEntry()
 			if err != nil {
 				return err
 			}
-			if event == (SessionEvent{}) {
-				continue
+			if _, ok := entry.Fields["MESSAGE"]; ok {
+				line := fmt.Sprintf("%s %s %s[%s]: %s", // reproduce format of journalctl output
+					entry.Fields["SYSLOG_TIMESTAMP"],
+					entry.Fields["_HOSTNAME"],
+					entry.Fields["SYSLOG_IDENTIFIER"],
+					entry.Fields["_PID"],
+					entry.Fields["MESSAGE"],
+				)
+				event, err := getLogEvent(line, db, bucket)
+				if err != nil {
+					return err
+				}
+				if event == (SessionEvent{}) {
+					continue
+				}
+				event, err = processEvent(event, sessions, portToUser)
+				if err != nil {
+					return err
+				}
+				consoleLogger.Info().
+					Str("event time", event.EventTime.String()).
+					Str("event type", event.EventType).
+					Str("username", event.Username).
+					Str("source ip", event.SourceIP).
+					Str("port", event.Port).
+					Msg("ssh event")
+				// PrintEvent(event, config.K.Bool("color"))
 			}
-			event, err = processEvent(event, sessions, portToUser)
-			if err != nil {
-				return err
-			}
-			consoleLogger.Info().
-				Str("event time", event.EventTime.String()).
-				Str("event type", event.EventType).
-				Str("username", event.Username).
-				Str("source ip", event.SourceIP).
-				Str("port", event.Port).
-				Msg("ssh event")
-			// PrintEvent(event, config.K.Bool("color"))
 		}
 	}
-	return nil
-
 }
 
 // EventsToSessions converts a slice of SessionEvent into a slice of Session.
@@ -189,7 +193,7 @@ func EventsToSessions(events *[]SessionEvent) []Session {
 }
 
 // WatchLog watches the logFilele for login events and logs them to the output.
-func WatchLog(input *os.File, db *bolt.DB, bucket string, sessions *[]Session, done chan struct{}) error {
+func WatchLog(ctx context.Context, input *os.File, db *bolt.DB, bucket string, sessions *[]Session) error {
 	portToUser := make(map[string]string)
 
 	var offset int64
@@ -206,7 +210,7 @@ func WatchLog(input *os.File, db *bolt.DB, bucket string, sessions *[]Session, d
 
 	for {
 		select {
-		case <-done:
+		case <-ctx.Done():
 			return nil
 		case event := <-watcher.Events:
 			if event.Op&fsnotify.Write == fsnotify.Write {
