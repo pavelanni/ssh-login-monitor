@@ -45,7 +45,7 @@ func UpdateKeysDB(ctx context.Context, keysFile string, db *bolt.DB, bucket stri
 		return nil
 	}
 	// if follow is true, watch the authkeys file for changes and update the database
-	var offset int64
+	//var offset int64
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return err
@@ -61,10 +61,10 @@ func UpdateKeysDB(ctx context.Context, keysFile string, db *bolt.DB, bucket stri
 			return nil
 		case ev := <-watcher.Events:
 			if ev.Op&fsnotify.Write == fsnotify.Write {
-				_, err := f.Seek(offset, io.SeekStart)
-				if err != nil {
-					return err
-				}
+				//_, err := f.Seek(offset, io.SeekCurrent)
+				//if err != nil {
+				//	return err
+				//}
 				scanner := bufio.NewScanner(f)
 				for scanner.Scan() {
 					// Parse the authorized key and extract the comment and fingerprint
