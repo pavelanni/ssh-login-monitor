@@ -30,7 +30,7 @@ func TestLogToEvents(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	db, err := bolt.Open("../../test/fingerprints.db", 0400, nil)
+	db, err := bolt.Open("../../fingerprints.db", 0400, nil)
 	if err != nil {
 		panic(err)
 	}
