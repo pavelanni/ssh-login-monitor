@@ -104,14 +104,14 @@ Apr 27 10:21:37 deep-rh sshd[1337458]: pam_unix(sshd:session): session closed fo
 				{
 					EventTime: time3,
 					EventType: "logout",
-					Username:  "root",
+					Username:  "????",
 					SourceIP:  "192.168.1.24",
 					Port:      "49090",
 				},
 				{
 					EventTime: time4,
 					EventType: "logout",
-					Username:  "root",
+					Username:  "????",
 					SourceIP:  "192.168.1.24",
 					Port:      "41254",
 				},
