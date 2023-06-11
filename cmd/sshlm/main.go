@@ -54,16 +54,16 @@ func main() {
 	}()
 
 	// Check if authkeys file is provided
-	if config.K.String("authkeys") != "" {
+	if config.K.Strings("authkeys") != nil {
 		if config.K.Bool("followauthkeys") {
 			go func() {
-				err = sshloginmonitor.UpdateKeysDB(ctx, config.K.String("authkeys"), db, config.K.String("bucket"), true)
+				err = sshloginmonitor.UpdateKeysDB(ctx, config.K.Strings("authkeys"), db, config.K.String("bucket"), true)
 				if err != nil {
 					log.Fatal(err)
 				}
 			}()
 		} else {
-			err = sshloginmonitor.UpdateKeysDB(ctx, config.K.String("authkeys"), db, config.K.String("bucket"), false)
+			err = sshloginmonitor.UpdateKeysDB(ctx, config.K.Strings("authkeys"), db, config.K.String("bucket"), false)
 			if err != nil {
 				log.Fatal(err)
 			}

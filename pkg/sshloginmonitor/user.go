@@ -21,29 +21,42 @@ type User struct {
 	Fingerprint string
 }
 
-func UpdateKeysDB(ctx context.Context, keysFile string, db *bolt.DB, bucket string, follow bool) error {
-	f, err := os.Open(keysFile)
-	if err != nil {
-		if errors.Is(err, os.ErrNotExist) {
-			log.Println("authkeys file not found; database wasn't updated")
-			return nil
-		}
-		return err
-	}
-	defer f.Close()
-
+func UpdateKeysDB(ctx context.Context, keysFiles []string, db *bolt.DB, bucket string, follow bool) error {
 	users := make([]User, 0)
-	err = getAuthKeys(f, &users)
-	if err != nil {
-		return err
+	offsets := make(map[string]int64)
+	files := make(map[string]*os.File)
+
+	for _, keysFile := range keysFiles {
+		f, err := os.Open(keysFile)
+		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				log.Println("authkeys file not found; database wasn't updated")
+				return nil
+			}
+			return err
+		}
+		defer f.Close()
+		log.Println("adding keys from file: ", keysFile)
+		files[keysFile] = f
+		err = getAuthKeys(f, &users)
+		if err != nil {
+			return err
+		}
+		offset, err := f.Seek(0, io.SeekCurrent)
+		if err != nil {
+			return err
+		}
+		offsets[keysFile] = offset
+		err = addUsersToDB(users, db, bucket)
+		if err != nil {
+			return err
+		}
 	}
-	err = addUsersToDB(users, db, bucket)
-	if err != nil {
-		return err
-	}
+	log.Println("offsets: ", offsets)
 	if !follow {
 		return nil
 	}
+
 	// if follow is true, watch the authkeys file for changes and update the database
 	//var offset int64
 	watcher, err := fsnotify.NewWatcher()
@@ -51,20 +64,26 @@ func UpdateKeysDB(ctx context.Context, keysFile string, db *bolt.DB, bucket stri
 		return err
 	}
 	defer watcher.Close()
-	err = watcher.Add(keysFile)
-	if err != nil {
-		return err
+	for _, keysFile := range keysFiles {
+		err = watcher.Add(keysFile)
+		if err != nil {
+			return err
+		}
 	}
+	log.Println("watcher: ", watcher)
 	for {
 		select {
 		case <-ctx.Done():
 			return nil
 		case ev := <-watcher.Events:
 			if ev.Op&fsnotify.Write == fsnotify.Write {
-				//_, err := f.Seek(offset, io.SeekCurrent)
-				//if err != nil {
-				//	return err
-				//}
+				log.Println("key was added to file: ", ev.Name)
+				f := files[ev.Name]
+				offset := offsets[ev.Name]
+				_, err := f.Seek(offset, io.SeekStart)
+				if err != nil {
+					return err
+				}
 				scanner := bufio.NewScanner(f)
 				for scanner.Scan() {
 					// Parse the authorized key and extract the comment and fingerprint

@@ -109,7 +109,7 @@ func JournalToEvents(ctx context.Context, db *bolt.DB, bucket string) error {
 					j.Wait(sdjournal.IndefiniteWait)
 					continue
 				} else {
-					break
+					return nil
 				}
 			}
 			entry, err := j.GetEntry()

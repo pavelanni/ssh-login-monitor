@@ -1,4 +1,6 @@
-authkeys: ""
+authkeys:
+  - /root/.ssh/authorized_keys
+  - /home/pavel/.ssh/authorized_keys
 bucket: "LoginMonitor"
 output: "sum"
 log: "test/secure.log"
