@@ -4,11 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
 
+	"go.etcd.io/bbolt"
 	bolt "go.etcd.io/bbolt"
 )
 
@@ -32,9 +34,19 @@ func TestLogToEvents(t *testing.T) {
 
 	db, err := bolt.Open("../../fingerprints.db", 0400, nil)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	bucket := "LoginMonitor"
+	err = db.View(func(tx *bbolt.Tx) error {
+		b := tx.Bucket([]byte(bucket))
+		if b == nil {
+			return errors.New("bucket not found")
+		}
+		return nil
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer db.Close()
 
 	type args struct {
