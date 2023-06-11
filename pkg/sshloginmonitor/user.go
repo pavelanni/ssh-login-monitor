@@ -22,7 +22,6 @@ type User struct {
 }
 
 func UpdateKeysDB(ctx context.Context, keysFiles []string, db *bolt.DB, bucket string, follow bool) error {
-	users := make([]User, 0)
 	offsets := make(map[string]int64)
 	files := make(map[string]*os.File)
 
@@ -37,6 +36,7 @@ func UpdateKeysDB(ctx context.Context, keysFiles []string, db *bolt.DB, bucket s
 		}
 		defer f.Close()
 		log.Println("adding keys from file: ", keysFile)
+		users := make([]User, 0)
 		files[keysFile] = f
 		err = getAuthKeys(f, &users)
 		if err != nil {
@@ -52,7 +52,6 @@ func UpdateKeysDB(ctx context.Context, keysFiles []string, db *bolt.DB, bucket s
 			return err
 		}
 	}
-	log.Println("offsets: ", offsets)
 	if !follow {
 		return nil
 	}
