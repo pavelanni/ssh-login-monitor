@@ -117,7 +117,7 @@ func JournalToEvents(ctx context.Context, db *bolt.DB, bucket string) error {
 				return err
 			}
 			if _, ok := entry.Fields["MESSAGE"]; ok {
-				line := fmt.Sprintf("%s %s %s[%s]: %s", // reproduce format of journalctl output
+				line := fmt.Sprintf("%s %s %s[%s]: %s", // reproduce format of journalctl output; should be refactored
 					entry.Fields["SYSLOG_TIMESTAMP"],
 					entry.Fields["_HOSTNAME"],
 					entry.Fields["SYSLOG_IDENTIFIER"],
