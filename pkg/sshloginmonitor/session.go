@@ -23,6 +23,7 @@ type SessionEvent struct {
 	Username  string    `json:"username"`
 	SourceIP  string    `json:"source_ip"`
 	Port      string    `json:"port"`
+	KeyUser   string    `json:"key_user"`
 }
 
 type Session struct {
@@ -31,6 +32,7 @@ type Session struct {
 	Port      string    `json:"port"`
 	StartTime time.Time `json:"start_time"`
 	EndTime   time.Time `json:"end_time"`
+	KeyUser   string    `json:"key_user"`
 }
 
 // LogToEvents takes a filename string and a pointer to a slice of User structs.
@@ -141,6 +143,7 @@ func JournalToEvents(ctx context.Context, db *bolt.DB, bucket string) error {
 					Str("username", event.Username).
 					Str("source ip", event.SourceIP).
 					Str("port", event.Port).
+					Str("key user", event.KeyUser).
 					Msg("ssh event")
 				// PrintEvent(event, config.K.Bool("color"))
 			}
@@ -161,38 +164,17 @@ func EventsToSessions(events *[]SessionEvent) []Session {
 	sessions := []Session{}
 	portToUser := make(map[string]string)
 
-	for j, event := range *events {
-		if event.EventType == "login" {
-			portToUser[event.Port] = event.Username
-			session := Session{
-				Username:  event.Username,
-				Port:      event.Port,
-				SourceIP:  event.SourceIP,
-				StartTime: event.EventTime,
-			}
-			sessions = append(sessions, session)
-		} else if event.EventType == "logout" {
-			port := event.Port
-			if user, ok := portToUser[port]; ok {
-				// update the user in the logout event
-				(*events)[j].Username = user
-				// find the session with the same port in sessions
-				for i, session := range sessions {
-					if session.Username == user && session.SourceIP == event.SourceIP && session.Port == port {
-						session.EndTime = event.EventTime
-						sessions[i] = session
-						delete(portToUser, port)
-					}
-				}
-			} else {
-				log.Printf("login event for port %s not found\n", port)
-			}
+	for _, event := range *events {
+		_, err := processEvent(event, &sessions, portToUser)
+		if err != nil {
+			log.Println(err)
+			continue
 		}
 	}
 	return sessions
 }
 
-// WatchLog watches the logFilele for login events and logs them to the output.
+// WatchLog watches the logFile for login events and logs them to the output.
 func WatchLog(ctx context.Context, input *os.File, db *bolt.DB, bucket string, sessions *[]Session) error {
 	portToUser := make(map[string]string)
 
@@ -246,15 +228,15 @@ func WatchLog(ctx context.Context, input *os.File, db *bolt.DB, bucket string, s
 
 func getLogEvent(line string, db *bolt.DB, bucket string) (SessionEvent, error) {
 	// regexp for login pattern
-	reLogin := regexp.MustCompile(`Accepted publickey for root`)
+	reLogin := regexp.MustCompile(`Accepted publickey for `)
 	// regexp for logout pattern
-	reLogout := regexp.MustCompile(`Disconnected from user root`)
+	reLogout := regexp.MustCompile(`Disconnected from user `)
 	reParseLogin := regexp.MustCompile(`(?P<date>[A-Z][a-z]{2} [0-9]{2}) (?P<time>[0-9]{2}:[0-9]{2}:[0-9]{2})` +
-		`.* (?P<loginIP>[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}) ` +
+		`.*Accepted publickey for (?P<username>[a-zA-Z0-9_]*) from (?P<loginIP>[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}) ` +
 		`port (?P<port>[0-9]{1,6})` +
 		`.* SHA256:(?P<fingerprint>[a-zA-Z0-9+\/]*$)`)
 	reParseLogout := regexp.MustCompile(`(?P<date>[A-Z][a-z]{2} [0-9]{2}) (?P<time>[0-9]{2}:[0-9]{2}:[0-9]{2})` +
-		`.* (?P<loginIP>[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}) ` +
+		`.*Disconnected from user (?P<username>[a-zA-Z0-9_]*) (?P<loginIP>[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}) ` +
 		`port (?P<port>[0-9]{1,6})`)
 
 	event := SessionEvent{}
@@ -275,19 +257,20 @@ func getLogEvent(line string, db *bolt.DB, bucket string) (SessionEvent, error) 
 		if err != nil {
 			return SessionEvent{}, err
 		}
-		username, err := GetUserByFingerprint(result["fingerprint"], db, bucket)
+		keyUser, err := GetUserByFingerprint(result["fingerprint"], db, bucket)
 		if err != nil {
 			return SessionEvent{}, err
 		}
-		if username == "" {
-			log.Println("username not found in line " + line)
+		if keyUser == "" {
+			log.Println("key user not found in line " + line)
 		}
 		event = SessionEvent{
 			EventType: "login",
 			EventTime: eventTime,
-			Username:  username,
+			Username:  result["username"],
 			SourceIP:  result["loginIP"],
 			Port:      result["port"],
+			KeyUser:   keyUser,
 		}
 	}
 	if reLogout.MatchString(line) {
@@ -310,7 +293,8 @@ func getLogEvent(line string, db *bolt.DB, bucket string) (SessionEvent, error) 
 		event = SessionEvent{
 			EventType: "logout",
 			EventTime: eventTime,
-			Username:  "????",
+			Username:  result["username"],
+			KeyUser:   "????",
 			SourceIP:  result["loginIP"],
 			Port:      result["port"],
 		}
@@ -322,12 +306,13 @@ func getLogEvent(line string, db *bolt.DB, bucket string) (SessionEvent, error) 
 // where user is replaced with the actual user based on the sessions database
 func processEvent(event SessionEvent, sessions *[]Session, portToUser map[string]string) (SessionEvent, error) {
 	if event.EventType == "login" {
-		portToUser[event.Port] = event.Username
+		portToUser[event.Port] = event.KeyUser
 		session := Session{
 			Username:  event.Username,
 			Port:      event.Port,
 			SourceIP:  event.SourceIP,
 			StartTime: event.EventTime,
+			KeyUser:   event.KeyUser,
 		}
 		*sessions = append(*sessions, session)
 		return event, nil
@@ -335,10 +320,10 @@ func processEvent(event SessionEvent, sessions *[]Session, portToUser map[string
 		port := event.Port
 		if user, ok := portToUser[port]; ok {
 			// update the user in the logout event
-			event.Username = user
+			event.KeyUser = user
 			// find the session with the same port in sessions
 			for i, session := range *sessions {
-				if session.Username == user && session.SourceIP == event.SourceIP && session.Port == port {
+				if session.KeyUser == user && session.SourceIP == event.SourceIP && session.Port == port {
 					session.EndTime = event.EventTime
 					(*sessions)[i] = session
 					delete(portToUser, port)
@@ -346,8 +331,8 @@ func processEvent(event SessionEvent, sessions *[]Session, portToUser map[string
 			}
 			return event, nil
 		} else {
-			err := fmt.Errorf("login event for port %s not found\n", port)
-			return event, err
+			log.Printf("login event for port %s not found\n", port)
+			return event, nil
 		}
 	}
 	return event, nil

@@ -35,11 +35,13 @@ func PrintSummary(sessions []Session, colorFlag bool) {
 		color.NoColor = true
 	}
 	usernameColor := color.New(colorMap[config.K.String("theme.username")]).SprintfFunc()
+	keyUserColor := color.New(colorMap[config.K.String("theme.keyuser")]).SprintfFunc()
 	sourceipColor := color.New(colorMap[config.K.String("theme.sourceip")]).SprintfFunc()
 	starttimeColor := color.New(colorMap[config.K.String("theme.starttime")]).SprintfFunc()
 	endtimeColor := color.New(colorMap[config.K.String("theme.endtime")]).SprintfFunc()
 	for _, session := range sessions {
-		fmt.Printf("%s\t%s\t%s\t%s\t%s\n", usernameColor(session.Username),
+		fmt.Printf("%s\t%s\t%s\t%s\t%s\t%s\n", usernameColor(session.Username),
+			keyUserColor(session.KeyUser),
 			sourceipColor(session.SourceIP),
 			starttimeColor(session.StartTime.Format("2006-01-02 15:04:05")),
 			endtimeColor(session.EndTime.Format("2006-01-02 15:04:05")),
@@ -65,10 +67,12 @@ func PrintEvent(event SessionEvent, colorFlag bool) {
 		color.NoColor = true
 	}
 	usernameColor := color.New(colorMap[config.K.String("theme.username")]).SprintfFunc()
+	keyUserColor := color.New(colorMap[config.K.String("theme.keyuser")]).SprintfFunc()
 	eventtypeColor := color.New(colorMap[config.K.String("theme.eventtype")]).SprintfFunc()
 	eventtimeColor := color.New(colorMap[config.K.String("theme.eventtime")]).SprintfFunc()
 	sourceipColor := color.New(colorMap[config.K.String("theme.sourceip")]).SprintfFunc()
-	fmt.Println(usernameColor("%-24s", event.Username),
+	fmt.Println(usernameColor("%-20s", event.Username),
+		keyUserColor("%-20s", event.KeyUser),
 		eventtypeColor("%-8s", event.EventType),
 		sourceipColor("%-16s", event.SourceIP),
 		eventtimeColor("%-20s", event.EventTime.Format("2006-01-02 15:04:05")))
@@ -83,7 +87,7 @@ func PrintEvent(event SessionEvent, colorFlag bool) {
 //   - None
 func PrintCSV(events []SessionEvent) {
 	for _, event := range events {
-		fmt.Printf("%s,%s,%s,%s\n", event.Username, event.EventType, event.SourceIP,
+		fmt.Printf("%s,%s,%s,%s,%s\n", event.Username, event.KeyUser, event.EventType, event.SourceIP,
 			event.EventTime.Format("2006-01-02 15:04:05"))
 	}
 }

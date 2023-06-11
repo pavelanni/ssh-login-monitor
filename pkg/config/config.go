@@ -29,6 +29,7 @@ updatekeys: true
 color: false
 theme:
   username: green
+  keyuser: red
   eventtype: yellow
   eventtime: red
   sourceip: blue
