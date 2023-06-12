@@ -1,14 +1,32 @@
 = SSH login monitor
-How to use
 
-This program was born based on the link:STORY.adoc[story].
-Now it's being developed a bit beyond the original demo application.
+This program logs SSH login and logout events on the system.
+It keeps track of the authorized keys added to the system and calculates their fingerprints.
+Based on the fingerprints this monitor can tell which SSH key was used to login to the host.
+
+For example, you may have several users who have access to the `root` account on the host.
+You add those users' public keys to `/root/.ssh/authorized_keys` and that gives them root access to the system.
+Each login and logout event is logged in the systemd journal (get them using `journalctl -t sshd`),
+but those records contain only SSH fingerprints.
+This program maps fingerprints to SSH public keys and logs SSH events with the public key users that are usually stored in public key comments.
+
+The program's log will look like this:
+
+----
+<nil> INF ssh event event time="2023-05-27 21:30:57 +0000 UTC" event type=login key user=alice@fedora port=44670 source ip=192.168.1.24 username=root
+<nil> INF ssh event event time="2023-05-27 21:31:00 +0000 UTC" event type=logout key user=alice@fedora port=44670 source ip=192.168.1.24 username=root
+<nil> INF ssh event event time="2023-05-28 16:02:55 +0000 UTC" event type=login key user=charlie@fedora port=53456 source ip=192.168.1.24 username=root
+<nil> INF ssh event event time="2023-05-28 16:02:59 +0000 UTC" event type=logout key user=charlie@fedora port=53456 source ip=192.168.1.24 username=root
+----
+
+It shows which public key was used to login to the system (the `key user` field) and under which account (the `username` field).
 
 == Building
 
 === Prerequisites
 
-* Go version 1.19 and higher
+* Go version 1.19 and higher (most likely works with earlier versions too, but I haven't tested).
+* `systemd-devel` (Fedora, Red Hat, CentOS) or `libsystemd-dev` (Debian, Ubuntu) to work with the `sdjournal` module
 
 Clone this repo:
 
@@ -23,16 +41,20 @@ From the main directory run:
 
 [source,console]
 ----
-go run cmd/slm/main.go -l test/secure.log -d test/fingerprints.db
+go run ./... -l test/secure.log -d test/fingerprints.db -a test/authorized_keys -o sum
 ----
 
 You should see the following output:
 
 [source,none]
 ----
-alice@fedora    192.168.1.24    2023-04-27 10:21:19     2023-04-27 10:21:22     3s
-bob@fedora      192.168.1.24    2023-04-27 10:21:34     2023-04-27 10:21:37     3s
-charlie@fedora  192.168.1.24    2023-04-27 10:21:55     2023-04-27 10:21:58     3s
+2023/06/11 20:11:26 adding keys from file:  test/authorized_keys
+2023/06/11 20:11:26 adding fingerprint for user alice@fedora
+2023/06/11 20:11:26 adding fingerprint for user bob@fedora
+2023/06/11 20:11:26 adding fingerprint for user charlie@fedora
+root    alice@fedora    192.168.1.24    2023-04-27 10:21:19     2023-04-27 10:21:22     3s
+root    bob@fedora      192.168.1.24    2023-04-27 10:21:34     2023-04-27 10:21:37     3s
+root    charlie@fedora  192.168.1.24    2023-04-27 10:21:55     2023-04-27 10:21:58     3s
 ----
 
 === Build

@@ -113,10 +113,6 @@ func main() {
 		sshloginmonitor.PrintSummary(sessions, config.K.Bool("color"))
 	case "log":
 		sshloginmonitor.PrintLog(events, config.K.Bool("color"))
-	case "csv":
-		sshloginmonitor.PrintCSV(events)
-	case "json":
-		sshloginmonitor.PrintJSON(events)
 	}
 
 	// Check if follow flag is set to true

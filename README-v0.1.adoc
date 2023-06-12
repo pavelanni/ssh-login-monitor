@@ -1,0 +1,74 @@
+= SSH login monitor
+How to use
+
+This program was born based on the link:STORY.adoc[story].
+Now it's being developed a bit beyond the original demo application.
+
+== Building
+
+=== Prerequisites
+
+* Go version 1.19 and higher
+
+Clone this repo:
+
+[source,console]
+----
+git clone https://github.com/pavelanni/ssh-login-monitor.git
+----
+
+=== Run
+
+From the main directory run:
+
+[source,console]
+----
+go run cmd/slm/main.go -l test/secure.log -d test/fingerprints.db
+----
+
+You should see the following output:
+
+[source,none]
+----
+alice@fedora    192.168.1.24    2023-04-27 10:21:19     2023-04-27 10:21:22     3s
+bob@fedora      192.168.1.24    2023-04-27 10:21:34     2023-04-27 10:21:37     3s
+charlie@fedora  192.168.1.24    2023-04-27 10:21:55     2023-04-27 10:21:58     3s
+----
+
+=== Build
+
+. Build the application:
++
+[source,console]
+----
+make build
+----
+
+By default it builds the binary for the system you are running the build.
+Most likely it's Linux on x86_64, where you are going to use this tool.
+
+Copy the binary from `bin/slm` to the system where you are going to use it.
+
+== Using
+#THIS IS NOT IMPLEMENTED YET#
+
+. Collect the SSH fingerprints in the database.
+Specify the `authorized_keys` file when running this app.
++
+[source,console]
+----
+# slm -a ~/.ssh/authorized_keys
+----
+
+. Run this app against a log file--for example, `/var/log/secure`.
+It will print out the logins and logouts of each user based on the fingerprints database.
+
+. If you want to keep monitoring logins, run the app with the `-f` flag.
+It will constantly monitor the specified file and print out the events as they happen.
+
+. Output formats:
+** `-o sum` prints the summary of completed sessions with user names, login and logout times, session duration
+** `-o log` prints the log of login/logout events with usernames, times
+** `-o json` prints the list of login/logout events in JSON format (can be imported into another tool)
+** `-o csv` prints the list of login/logout events in CSV format
+

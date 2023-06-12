@@ -2,7 +2,6 @@ package config
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"os"
 
@@ -35,6 +34,7 @@ theme:
   sourceip: blue
   starttime: green
   endtime: red
+  duration: yellow
   port: blue`
 
 func LoadKonfig() error {
@@ -65,7 +65,6 @@ func LoadKonfig() error {
 	}
 
 	*configFile = os.ExpandEnv(*configFile) // to be able to use $HOME and other variables
-	fmt.Printf("Config file: %s\n", *configFile)
 
 	if err := K.Load(file.Provider(*configFile), yaml.Parser()); err != nil {
 		if !errors.Is(err, os.ErrNotExist) { // if the error is something else: bad YAML format, etc.
@@ -78,7 +77,7 @@ func LoadKonfig() error {
 	if err := K.Load(posflag.Provider(f, ".", K), nil); err != nil {
 		return err
 	}
-	log.Printf("Using config: %v\n", K.All())
+	//	log.Printf("Using config: %v\n", K.All())
 
 	return nil
 }

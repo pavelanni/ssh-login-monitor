@@ -164,12 +164,13 @@ func EventsToSessions(events *[]SessionEvent) []Session {
 	sessions := []Session{}
 	portToUser := make(map[string]string)
 
-	for _, event := range *events {
-		_, err := processEvent(event, &sessions, portToUser)
+	for i, event := range *events {
+		eventUpdated, err := processEvent(event, &sessions, portToUser)
 		if err != nil {
 			log.Println(err)
 			continue
 		}
+		(*events)[i] = eventUpdated
 	}
 	return sessions
 }

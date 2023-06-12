@@ -1,9 +1,7 @@
 package sshloginmonitor
 
 import (
-	"encoding/json"
 	"fmt"
-	"log"
 
 	"github.com/fatih/color"
 	"github.com/pavelanni/ssh-login-monitor/pkg/config"
@@ -39,13 +37,21 @@ func PrintSummary(sessions []Session, colorFlag bool) {
 	sourceipColor := color.New(colorMap[config.K.String("theme.sourceip")]).SprintfFunc()
 	starttimeColor := color.New(colorMap[config.K.String("theme.starttime")]).SprintfFunc()
 	endtimeColor := color.New(colorMap[config.K.String("theme.endtime")]).SprintfFunc()
+	durationColor := color.New(colorMap[config.K.String("theme.duration")]).SprintfFunc()
+
+	fmt.Println(usernameColor("%-20s", "USER"),
+		keyUserColor("%-20s", "KEY USER"),
+		sourceipColor("%-16s", "SOURCE IP"),
+		starttimeColor("%-20s", "START TIME"),
+		endtimeColor("%-20s", "END TIME"),
+		durationColor("%-8s", "DURATION"))
 	for _, session := range sessions {
-		fmt.Printf("%s\t%s\t%s\t%s\t%s\t%s\n", usernameColor(session.Username),
-			keyUserColor(session.KeyUser),
-			sourceipColor(session.SourceIP),
-			starttimeColor(session.StartTime.Format("2006-01-02 15:04:05")),
-			endtimeColor(session.EndTime.Format("2006-01-02 15:04:05")),
-			session.EndTime.Sub(session.StartTime))
+		fmt.Println(usernameColor("%-20s", session.Username),
+			keyUserColor("%-20s", session.KeyUser),
+			sourceipColor("%-16s", session.SourceIP),
+			starttimeColor("%-20s", session.StartTime.Format("2006-01-02 15:04:05")),
+			endtimeColor("%-20s", session.EndTime.Format("2006-01-02 15:04:05")),
+			durationColor("%-8s", session.EndTime.Sub(session.StartTime).String()))
 	}
 }
 
@@ -76,27 +82,4 @@ func PrintEvent(event SessionEvent, colorFlag bool) {
 		eventtypeColor("%-8s", event.EventType),
 		sourceipColor("%-16s", event.SourceIP),
 		eventtimeColor("%-20s", event.EventTime.Format("2006-01-02 15:04:05")))
-}
-
-// PrintCSV prints the given list of SessionEvent objects with the CSV format.
-//
-// Parameters:
-//   - events (List[SessionEvent]): The list of SessionEvent objects to be printed.
-//
-// Returns:
-//   - None
-func PrintCSV(events []SessionEvent) {
-	for _, event := range events {
-		fmt.Printf("%s,%s,%s,%s,%s\n", event.Username, event.KeyUser, event.EventType, event.SourceIP,
-			event.EventTime.Format("2006-01-02 15:04:05"))
-	}
-}
-
-// PrintJSON prints the given list of SessionEvent objects with the JSON format.
-func PrintJSON(events []SessionEvent) {
-	output, err := json.MarshalIndent(events, "", "  ")
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(string(output))
 }

@@ -18,25 +18,3 @@ Apr 27 10:21:55 deep-rh sshd[1337680]: pam_unix(sshd:session): session opened fo
 Apr 27 10:21:58 deep-rh sshd[1337730]: Received disconnect from 192.168.1.24 port 42552:11: disconnected by user
 Apr 27 10:21:58 deep-rh sshd[1337730]: Disconnected from user root 192.168.1.24 port 42552
 Apr 27 10:21:58 deep-rh sshd[1337680]: pam_unix(sshd:session): session closed for user root
-Apr 27 10:22:08 deep-rh systemd[1337710]: pam_unix(systemd-user:session): session closed for user rootApr 27 10:21:19 deep-rh sshd[1337250]: Accepted publickey for root from 192.168.1.24 port 49090 ssh2: ED25519 SHA256:5xuxPx8QnPv19/6IZ5frmQj1N0hRCP9J364ddE6avL8
-
-Apr 27 10:21:19 deep-rh sshd[1337250]: Accepted publickey for root from 192.168.1.24 port 49090 ssh2: ED25519 SHA256:5xuxPx8QnPv19/6IZ5frmQj1N0hRCP9J364ddE6avL8
-
-Apr 27 10:21:55 deep-rh sshd[1337680]: Accepted publickey for root from 192.168.1.24 port 42552 ssh2: ED25519 SHA256:QgAov0UZI25hWxnbLiHa00j64/zD1m80UMsSIZtxr2s
-
-Apr 27 10:21:58 deep-rh sshd[1337730]: Disconnected from user root 192.168.1.24 port 42552
-
-Apr 27 10:21:58 deep-rh sshd[1337730]: Disconnected from user root 192.168.1.24 port 42552
-
-Apr 27 10:21:55 deep-rh sshd[1337680]: Accepted publickey for root from 192.168.1.24 port 42552 ssh2: ED25519 SHA256:QgAov0UZI25hWxnbLiHa00j64/zD1m80UMsSIZtxr2s
-
-Apr 27 10:21:58 deep-rh sshd[1337730]: Disconnected from user root 192.168.1.24 port 42552
-
-Apr 27 10:21:19 deep-rh sshd[1337250]: Accepted publickey for root from 192.168.1.24 port 49090 ssh2: ED25519 SHA256:5xuxPx8QnPv19/6IZ5frmQj1N0hRCP9J364ddE6avL8
-
-Apr 27 10:21:55 deep-rh sshd[1337680]: Accepted publickey for root from 192.168.1.24 port 42552 ssh2: ED25519 SHA256:QgAov0UZI25hWxnbLiHa00j64/zD1m80UMsSIZtxr2s
-
-Apr 27 10:21:58 deep-rh sshd[1337730]: Disconnected from user root 192.168.1.24 port 42552
-
-Apr 27 10:21:22 deep-rh sshd[1337282]: Disconnected from user root 192.168.1.24 port 49090
-Apr 27 10:21:22 deep-rh sshd[1337282]: Disconnected from user root 192.168.1.24 port 49090
